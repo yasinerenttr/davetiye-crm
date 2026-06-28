@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+:root {
+  --bg-base:#f8f9fa; --bg-surface:#ffffff; --bg-elevated:#ffffff; --bg-hover:#f1f3f5; --bg-input:#f8f9fa;
+  --accent:#e8a33a; --accent-muted:rgba(232,163,58,.15); --accent-border:rgba(232,163,58,.35); --accent-glow:rgba(232,163,58,.12);
+  --text-primary:#212529; --text-secondary:#495057; --text-muted:#868e96;
+  --border-soft:rgba(0,0,0,.08); --border-medium:rgba(0,0,0,.15); --border-strong:rgba(0,0,0,.25);
+  --s-pending:#f0a928; --s-pending-bg:rgba(240,169,40,.12);
+  --s-approved:#4dabf7; --s-approved-bg:rgba(77,171,247,.12);
+  --s-sent:#a78bfa; --s-sent-bg:rgba(167,139,250,.12);
+  --s-done:#51cf66; --s-done-bg:rgba(81,207,102,.12);
+  --pub-border:#e8d8bf; --pub-gold:#b8863b; --pub-gold-light:#f3e7d0; --pub-text:#3c2f20; --pub-muted:#74654f;
+  font-family:'Inter','Segoe UI',system-ui,sans-serif; line-height:1.5; font-weight:400;
+  color:var(--text-primary); background:var(--bg-base);
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{margin:0;min-height:100vh;background:var(--bg-base);}
+#root{min-height:100vh;}
