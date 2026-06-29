@@ -101,7 +101,19 @@ const buildClient = () => new Client({
   authStrategy: new LocalAuth({ dataPath: path.join(__dirname, '.wwebjs_auth') }),
   puppeteer: {
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: [
+      '--no-sandbox', 
+      '--disable-setuid-sandbox', 
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--disable-software-rasterizer',
+      '--disable-extensions',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+      '--disable-accelerated-2d-canvas'
+    ],
   }
 });
 
@@ -120,9 +132,9 @@ const scheduleReconnect = (reason = 'unknown') => {
 const registerClientEvents = (instance) => {
   instance.on('qr', async (qr) => {
     console.log('QR RECEIVED');
-    clientStatus = 'QR_READY';
     try {
       qrCodeDataUrl = await qrcode.toDataURL(qr);
+      clientStatus = 'QR_READY'; // Set status only AFTER QR code string is generated
     } catch (err) {
       console.error('QR Generate Error:', err);
     }
