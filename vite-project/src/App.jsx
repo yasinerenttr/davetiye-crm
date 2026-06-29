@@ -14,12 +14,12 @@ import SocialLinks from './components/SocialLinks'
 import ContractClauses, { loadClauses, saveClauses } from './components/ContractClauses'
 import { clearSession, loadCompanySettings, loadCustomers, loadSession, saveCompanySettings, saveCustomers, saveSession, loadMessages, saveMessages } from './utils/storage'
 import { exportContractPdfBlob, exportExcel, exportPdf, generatePdfFromHtml } from './utils/exporters'
-import { fetchSocialLinks, updateSocialLinks, getSupabaseClient } from './utils/supabase'
+import { fetchSocialLinks, updateSocialLinks, getSupabaseClient, uploadPdfToSupabase } from './utils/supabase'
 import { normalizeNumericInput } from './utils/formatters'
 import { localizeField } from './utils/i18nFields'
 import { PdfTemplate } from './components/PdfTemplate'
 
-import WhatsAppConnection from './components/WhatsAppConnection'
+import InvoiceSettings from './components/InvoiceSettings'
 
 /* ── Sabitler ─────────────────────────────────────── */
 const ADMIN_PATH = '/turgut'
@@ -407,43 +407,26 @@ function App() {
       }
 
       if (type === 'WhatsApp') {
-        if (waStatus === 'OFFLINE') {
-          throw new Error('WhatsApp backend kapalı. Backend sunucusunu başlatın.')
-        }
-        if (waStatus !== 'READY') {
-          throw new Error(`WhatsApp hazır değil (durum: ${waStatus}). Ayarlar sayfasından QR kodu okutun.`)
-        }
-
         const phone = normalizeTurkishPhone(c.values?.phone || '')
         if (!phone) {
           throw new Error('Geçerli müşteri telefonu bulunamadı. Numara +90 formatına uygun olmalı.')
         }
         
-        const msgText = buildWAMsg(c.values?.full_name)
-
-        setWaLoading('WhatsApp gönderiliyor...')
+        setWaLoading('PDF Buluta Yükleniyor...')
         
-        const formData = new FormData()
-        formData.append('pdf', blob, fileName)
-        formData.append('phone', phone)
-        formData.append('caption', msgText)
+        // 1. Upload PDF to Supabase and get the public URL
+        const pdfUrl = await uploadPdfToSupabase(blob, fileName)
 
-        const response = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/send-pdf', {
-          method: 'POST',
-          body: formData
-        })
-
-        if (!response.ok) {
-          let errMsg = 'WhatsApp gönderimi başarısız oldu.'
-          try {
-            const errData = await response.json()
-            if (errData?.error) errMsg = errData.error
-          } catch {
-            // noop
-          }
-          throw new Error(errMsg)
-        }
-        showToast('✅ WhatsApp PDF eki başarıyla gönderildi.')
+        // 2. Build the WhatsApp message text with the URL
+        const msgText = `Merhaba ${c.values?.full_name || 'Müşterimiz'},\n\nSözleşmeniz hazırlanmıştır. Aşağıdaki bağlantıdan görüntüleyip indirebilirsiniz:\n\n📄 *Sözleşme Linki:*\n${pdfUrl}`
+        
+        // 3. Create the direct wa.me link
+        const waLink = `https://wa.me/${phone.replace(/\\D/g, '')}?text=${encodeURIComponent(msgText)}`
+        
+        // 4. Open the WhatsApp application in a new tab
+        window.open(waLink, '_blank')
+        
+        showToast('✅ WhatsApp uygulaması açıldı!')
 
       } else {
         // Mail
@@ -1044,7 +1027,7 @@ function App() {
               <ContractClauses mode="admin" />
             </div>
 
-            <WhatsAppConnection />
+
 
             {/* Sosyal Medya */}
             <div style={{ marginTop: 24, padding: 24, border: '1px solid var(--border-soft)', borderRadius: 12, background: 'var(--bg-elevated)' }}>
