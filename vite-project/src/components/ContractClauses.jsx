@@ -17,6 +17,7 @@ const DEFAULT_CLAUSES = [
   'Ürüne verilen hasar müşteriye aittir.',
   'Teslim tarihi değişikliği en az 3 gün önceden bildirilmelidir.',
   'Hizmet Bedeli iadesi yapılmamaktadır.',
+  'Sözleşmenin hiç veya gereği gibi ifa edilememesi, 3.kişilerle akit yapılmak istenmesi veya alımdan/kiralamadan vazgeçilmek istenmesi durumunda; alıcı sözleşmede adı geçen şirkete ürünün toplam tutarının tamamına karşılık gelen meblağı cayma bedeli olarak ödemeyi kabul ve taahhüt eder.',
 ]
 
 export function loadClauses() {
