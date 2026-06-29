@@ -412,22 +412,37 @@ function App() {
           throw new Error('Geçerli müşteri telefonu bulunamadı. Numara +90 formatına uygun olmalı.')
         }
         
+        // 0. Senkron olarak yeni bir sekme açın (Popup engelleyiciyi aşmak için)
+        const newTab = window.open('about:blank', '_blank')
+        if (!newTab) {
+          showToast('⚠️ Lütfen tarayıcınızın açılır pencere (popup) engelleyicisini kapatın.')
+        }
+
         setWaLoading('PDF Buluta Yükleniyor...')
         
-        // 1. Upload PDF to Supabase and get the public URL
-        const pdfUrl = await uploadPdfToSupabase(blob, fileName)
+        try {
+          // 1. Upload PDF to Supabase and get the public URL
+          const pdfUrl = await uploadPdfToSupabase(blob, fileName)
 
-        // 2. Build the WhatsApp message text with the URL
-        const msgText = `Merhaba ${c.values?.full_name || 'Müşterimiz'},\n\nSözleşmeniz hazırlanmıştır. Aşağıdaki bağlantıdan görüntüleyip indirebilirsiniz:\n\n📄 *Sözleşme Linki:*\n${pdfUrl}`
-        
-        // 3. Create the direct wa.me link
-        const waLink = `https://wa.me/${phone.replace(/\\D/g, '')}?text=${encodeURIComponent(msgText)}`
-        
-        // 4. Open the WhatsApp application in a new tab
-        window.open(waLink, '_blank')
-        
-        showToast('✅ WhatsApp uygulaması açıldı!')
-
+          // 2. Build the WhatsApp message text with the URL
+          const msgText = `Merhaba ${c.values?.full_name || 'Müşterimiz'},\n\nSözleşmeniz hazırlanmıştır. Aşağıdaki bağlantıdan görüntüleyip indirebilirsiniz:\n\n📄 *Sözleşme Linki:*\n${pdfUrl}`
+          
+          // 3. Create the direct wa.me link
+          const waLink = `https://wa.me/${phone.replace(/\\D/g, '')}?text=${encodeURIComponent(msgText)}`
+          
+          // 4. Update the blank tab's URL
+          if (newTab) {
+            newTab.location.href = waLink
+          } else {
+             // Fallback if popup blocker still blocked the initial open
+             window.location.href = waLink
+          }
+          
+          showToast('✅ WhatsApp uygulaması açıldı!')
+        } catch (err) {
+          if (newTab) newTab.close()
+          throw err
+        }
       } else {
         // Mail
         download()
@@ -761,8 +776,7 @@ function App() {
                         disabled={
                           !selectedCustomer.channel ||
                           !pdfTemplateRef.current ||
-                          !!waLoading ||
-                          (selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY')
+                          !!waLoading
                         }
                         onClick={() => handleSend(selectedCustomer, selectedCustomer.channel)}
                         style={{
