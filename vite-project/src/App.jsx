@@ -19,7 +19,7 @@ import { normalizeNumericInput } from './utils/formatters'
 import { localizeField } from './utils/i18nFields'
 import { PdfTemplate } from './components/PdfTemplate'
 
-import InvoiceSettings from './components/InvoiceSettings'
+
 
 /* ── Sabitler ─────────────────────────────────────── */
 const ADMIN_PATH = '/turgut'
