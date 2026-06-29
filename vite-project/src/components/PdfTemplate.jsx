@@ -194,7 +194,7 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
         <div style={{ flex: 1, minHeight: '40px' }}></div>
 
         {/* Imzalar */}
-        <div style={{ marginTop: '40px', marginBottom: '60px', display: 'flex', justifyContent: 'space-between', padding: '0 40px' }}>
+        <div style={{ marginTop: '40px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', padding: '0 40px' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ color: '#111111', fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>MÜŞTERİ</div>
             <div style={{ color: '#555555', fontSize: '12px', fontWeight: 500 }}>ADI SOYADI / İMZA</div>
@@ -205,12 +205,20 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
           </div>
         </div>
 
+        {/* KVKK Onayı */}
+        <div style={{ textAlign: 'center', marginBottom: '30px', padding: '0 40px' }}>
+          <div style={{ color: '#111111', fontSize: '10px', fontWeight: 700, marginBottom: '4px' }}>KVKK ONAYI</div>
+          <div style={{ color: '#555555', fontSize: '9px', lineHeight: '1.4' }}>
+            Alıcı, işbu sözleşmeyi onaylayarak kişisel verilerinin <strong style={{color: '#111111'}}>6698 sayılı KVKK</strong> kapsamında işlenmesini kabul eder. Elektronik onay hukuken geçerli olup, ıslak imza isteğe bağlıdır.
+          </div>
+        </div>
+
         {/* Footer */}
         <div style={{ marginTop: 'auto', borderTop: '2px solid #111111', paddingTop: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ color: '#111111', fontSize: '11px', fontWeight: 500, display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
-            <div style={{ color: '#111111', fontWeight: 800, letterSpacing: '0.5px', display: 'flex', gap: '12px' }}>
-              {settings.instagram && <span>INSTAGRAM: @{settings.instagram.replace(/https?:\/\/(www\.)?instagram\.com\//, '').replace(/\//g, '')}</span>}
-              {settings.tiktok && <span>TIKTOK: @{settings.tiktok.replace(/https?:\/\/(www\.)?tiktok\.com\/@?/, '').replace(/\//g, '')}</span>}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              {settings.instagram && <span>Instagram: @{settings.instagram.replace(/https?:\/\/(www\.)?instagram\.com\//, '').replace(/\//g, '')}</span>}
+              {settings.tiktok && <span>TikTok: @{settings.tiktok.replace(/https?:\/\/(www\.)?tiktok\.com\/@?/, '').replace(/\//g, '')}</span>}
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               {settings.phone && <span>Tel: {settings.phone}</span>}
