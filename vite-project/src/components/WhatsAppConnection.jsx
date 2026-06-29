@@ -8,20 +8,30 @@ export default function WhatsAppConnection() {
   const fetchStatus = async () => {
     try {
       const res = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/status', { credentials: 'omit' });
+      console.log('Status Response:', res.status, res.statusText);
       const data = await res.json();
+      console.log('Status Data:', data);
+      
       setStatus(data.status);
       
       if (data.status === 'QR_READY') {
-        const qrRes = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/qr', { credentials: 'omit' });
-        if (qrRes.ok) {
-          const qrData = await qrRes.json();
-          setQr(qrData.qr);
+        try {
+          const qrRes = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/qr', { credentials: 'omit' });
+          console.log('QR Response:', qrRes.status);
+          if (qrRes.ok) {
+            const qrData = await qrRes.json();
+            setQr(qrData.qr);
+          } else {
+            console.warn('QR response not ok:', await qrRes.text());
+          }
+        } catch (qrErr) {
+          console.error('QR fetch error:', qrErr);
         }
       } else {
         setQr(null);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Main fetchStatus error:', err);
       setStatus('OFFLINE');
     }
   };
