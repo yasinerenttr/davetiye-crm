@@ -5,7 +5,7 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const fs = require('fs');
 const path = require('path');
-const chromium = require('@sparticuz/chromium');
+
 
 const app = express();
 const port = 3001;
@@ -102,11 +102,8 @@ const buildClient = async () => new Client({
   authStrategy: new LocalAuth({ dataPath: path.join(__dirname, '.wwebjs_auth') }),
   authTimeoutMs: 60000,
   puppeteer: {
-    headless: chromium.headless,
-    dumpio: true, // Output browser console to node console
-    executablePath: await chromium.executablePath(),
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
   }
 });
 
