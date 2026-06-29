@@ -230,22 +230,78 @@ function App() {
               }).catch(() => {})
            }
         } else {
-           // Backend'de veri varsa, React State'e ve LocalStorage'a yaz
-           if (db.customers && JSON.stringify(db.customers) !== JSON.stringify(localCustomers)) {
-             setCustomers(db.customers)
-             writeRecords(db.customers)
-             setLastSync(new Date())
+           // --- CUSTOMERS MERGE ---
+           if (db.customers) {
+             const merged = [...localCustomers]
+             let changed = false
+             for (const dbC of db.customers) {
+               const idx = merged.findIndex(c => c.id === dbC.id)
+               if (idx === -1) {
+                 merged.push(dbC)
+                 changed = true
+               } else if (dbC.updatedAt && merged[idx].updatedAt && new Date(dbC.updatedAt) > new Date(merged[idx].updatedAt)) {
+                 merged[idx] = dbC
+                 changed = true
+               }
+             }
+             if (changed) {
+               setCustomers(merged)
+               writeRecords(merged)
+               setLastSync(new Date())
+             }
+             if (isAdmin && merged.length > db.customers.length) {
+               fetch('https://davetiye-crm.onrender.com/api/db', {
+                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customers: merged })
+               }).catch(() => {})
+             }
+           } else if (isAdmin && localCustomers.length > 0) {
+             fetch('https://davetiye-crm.onrender.com/api/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customers: localCustomers }) }).catch(() => {})
            }
-           if (db.settings && JSON.stringify(db.settings) !== JSON.stringify(localSettings)) {
-             setSettings(db.settings)
-             saveCompanySettings(db.settings)
+
+           // --- SETTINGS HEURISTIC ---
+           if (db.settings) {
+             const localIsReal = localSettings.phone !== '+90 5xx xxx xx xx' || localSettings.email !== 'info@hautecouture.com'
+             const dbIsDefault = db.settings.phone === '+90 5xx xxx xx xx' && db.settings.email === 'info@hautecouture.com'
+             
+             if (dbIsDefault && localIsReal && isAdmin) {
+               // Sunucudaki default, benimki gerçek. Sunucuyu ez.
+               fetch('https://davetiye-crm.onrender.com/api/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ settings: localSettings }) }).catch(() => {})
+             } else if (JSON.stringify(db.settings) !== JSON.stringify(localSettings)) {
+               setSettings(db.settings)
+               saveCompanySettings(db.settings)
+             }
+           } else if (isAdmin) {
+             fetch('https://davetiye-crm.onrender.com/api/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ settings: localSettings }) }).catch(() => {})
            }
-           if (db.clauses && JSON.stringify(db.clauses) !== JSON.stringify(localClauses)) {
-             saveClauses(db.clauses)
+
+           // --- CLAUSES ---
+           if (db.clauses) {
+             if (db.clauses.length > 0 && JSON.stringify(db.clauses) !== JSON.stringify(localClauses)) {
+               saveClauses(db.clauses)
+             }
+           } else if (isAdmin && localClauses.length > 0) {
+             fetch('https://davetiye-crm.onrender.com/api/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clauses: localClauses }) }).catch(() => {})
            }
-           if (db.messages && JSON.stringify(db.messages) !== JSON.stringify(localMessages)) {
-             setMessages(db.messages)
-             saveMessages(db.messages)
+
+           // --- MESSAGES MERGE ---
+           if (db.messages) {
+             const mergedMsg = [...localMessages]
+             let changedMsg = false
+             for (const dbM of db.messages) {
+               if (mergedMsg.findIndex(m => m.id === dbM.id) === -1) {
+                 mergedMsg.push(dbM)
+                 changedMsg = true
+               }
+             }
+             if (changedMsg) {
+               setMessages(mergedMsg)
+               saveMessages(mergedMsg)
+             }
+             if (isAdmin && mergedMsg.length > db.messages.length) {
+               fetch('https://davetiye-crm.onrender.com/api/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: mergedMsg }) }).catch(() => {})
+             }
+           } else if (isAdmin && localMessages.length > 0) {
+             fetch('https://davetiye-crm.onrender.com/api/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: localMessages }) }).catch(() => {})
            }
         }
       } catch (err) {
