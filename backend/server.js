@@ -10,11 +10,22 @@ const app = express();
 const port = 3001;
 
 // CORS ve Body Parser
-app.use(cors({
-  origin: '*',
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = ['https://sz-haute-couture.netlify.app', 'http://localhost:5173'];
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // explicitly handle preflight
 app.use(express.json());
 
 // Upload settings for Multer (Temp directory)
