@@ -447,7 +447,7 @@ function App() {
         .trim()
         .replace(/\s+/g, '_')
         .replace(/[^a-zA-Z0-9_]/g, '') || 'Musteri'
-      const fileName = `${normalizedName}_Teklif.pdf`
+      const fileName = `${normalizedName}_Satis_Sozlesmesi.pdf`
       const { blob, download } = await generatePdfFromHtml(pdfTemplateRef, fileName)
       if (!blob || !(blob instanceof Blob) || blob.size === 0) {
         throw new Error('PDF hazır değil. Lütfen tekrar deneyin.')
@@ -472,9 +472,9 @@ function App() {
           const file = new File([blob], fileName, { type: 'application/pdf' })
           if (navigator.canShare({ files: [file] })) {
             try {
+              // Android WhatsApp Web Share bug'ı yüzünden 'text' ve 'files' aynı anda gönderilirse 
+              // WhatsApp bunu bazen .json veya .txt olarak algılar. Sadece dosyayı paylaşıyoruz.
               await navigator.share({
-                title: fileName,
-                text: msgText,
                 files: [file]
               })
               shared = true
