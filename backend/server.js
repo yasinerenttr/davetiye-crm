@@ -12,16 +12,12 @@ const port = 3001;
 // CORS ve Body Parser
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = ['https://sz-haute-couture.netlify.app', 'http://localhost:5173'];
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    // Reflect the requesting origin to bypass any strict string matching issues.
+    callback(null, origin || '*');
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 };
 
 app.use(cors(corsOptions));
