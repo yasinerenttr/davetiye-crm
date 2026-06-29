@@ -101,14 +101,21 @@ function AdminEditor() {
 
       {/* Madde ekle */}
       <div className="cc-add-row">
-        <input
+        <textarea
           ref={inputRef}
           className="cc-add-input"
           value={input}
           onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())}
-          placeholder="Yeni madde yazın... (Enter ile ekle)"
-          maxLength={200}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              add();
+            }
+          }}
+          placeholder="Yeni madde yazın... (Shift+Enter alt satır, Enter ile ekle)"
+          maxLength={1000}
+          rows={3}
+          style={{ resize: 'vertical' }}
         />
         <button
           type="button"

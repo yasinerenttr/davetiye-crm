@@ -50,7 +50,7 @@ export const fetchSocialLinks = async () => {
 
   const { data, error } = await supabase
     .from('settings')
-    .select('instagram_url, tiktok_url, facebook_url')
+    .select('instagram_url, tiktok_url, facebook_url, whatsapp_url')
     .eq('id', 1)
     .single()
 
@@ -70,7 +70,8 @@ export const updateSocialLinks = async (links) => {
     .update({
       instagram_url: links.instagram || null,
       tiktok_url: links.tiktok || null,
-      facebook_url: links.facebook || null
+      facebook_url: links.facebook || null,
+      whatsapp_url: links.whatsapp || null
     })
     .eq('id', 1)
 

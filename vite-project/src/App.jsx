@@ -167,6 +167,7 @@ function App() {
           instagram: data.instagram_url || prev.instagram || '',
           tiktok: data.tiktok_url || prev.tiktok || '',
           facebook: data.facebook_url || prev.facebook || '',
+          whatsapp: data.whatsapp_url || prev.whatsapp || '',
         }))
       }
       
@@ -180,13 +181,15 @@ function App() {
               setDbSocialLinks({
                 instagram_url: payload.new.instagram_url || '',
                 tiktok_url: payload.new.tiktok_url || '',
-                facebook_url: payload.new.facebook_url || ''
+                facebook_url: payload.new.facebook_url || '',
+                whatsapp_url: payload.new.whatsapp_url || ''
               })
               setSettings(prev => ({
                 ...prev,
                 instagram: payload.new.instagram_url || '',
                 tiktok: payload.new.tiktok_url || '',
                 facebook: payload.new.facebook_url || '',
+                whatsapp: payload.new.whatsapp_url || '',
               }))
             }
           })
@@ -1015,6 +1018,7 @@ function App() {
                 className="btn btn-primary"
                 onClick={() => {
                   saveCompanySettings(settings);
+                  updateSocialLinks(settings);
                   showToast('✅ Tüm ayarlar kaydedildi!');
                 }}
                 style={{ padding: '10px 28px', fontSize: '1rem', fontWeight: 700 }}
@@ -1081,6 +1085,7 @@ function App() {
                   className="btn btn-primary"
                   onClick={() => {
                     saveCompanySettings(settings);
+                    updateSocialLinks(settings);
                     showToast('✅ Tüm ayarlar kaydedildi!');
                   }}
                   style={{ padding: '10px 24px', fontSize: '0.9rem', fontWeight: 600 }}
