@@ -5,6 +5,7 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const fs = require('fs');
 const path = require('path');
+const chromium = require('@sparticuz/chromium');
 
 const app = express();
 const port = 3001;
@@ -97,7 +98,7 @@ const clearReconnectTimer = () => {
   }
 };
 
-const buildClient = () => new Client({
+const buildClient = async () => new Client({
   authStrategy: new LocalAuth({ dataPath: path.join(__dirname, '.wwebjs_auth') }),
   authTimeoutMs: 60000,
   webVersionCache: {
@@ -105,21 +106,11 @@ const buildClient = () => new Client({
     remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
   },
   puppeteer: {
-    headless: true,
+    headless: chromium.headless,
     dumpio: true, // Output browser console to node console
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    args: [
-      '--no-sandbox', 
-      '--disable-setuid-sandbox', 
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--disable-software-rasterizer',
-      '--disable-extensions',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process',
-      '--disable-accelerated-2d-canvas'
-    ],
+    executablePath: await chromium.executablePath(),
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
   }
 });
 
@@ -190,7 +181,7 @@ const initializeClient = async (trigger = 'startup') => {
     if (client) {
       try { await client.destroy(); } catch (_) {}
     }
-    client = buildClient();
+    client = await buildClient();
     registerClientEvents(client);
     await client.initialize();
     console.log(`WhatsApp initialize started (${trigger})`);
