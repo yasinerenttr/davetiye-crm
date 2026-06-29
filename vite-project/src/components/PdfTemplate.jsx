@@ -55,7 +55,9 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ color: '#111111', fontSize: '18px', fontWeight: 800, marginBottom: '6px', letterSpacing: '2px', textTransform: 'uppercase' }}>SATIŞ SÖZLEŞMESİ</div>
-            <div style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>Tarih: {new Date(customer.createdAt).toLocaleDateString('tr-TR')}</div>
+            <div style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>
+              Tarih: {new Date(customer.createdAt).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+            </div>
           </div>
         </div>
 
@@ -192,20 +194,20 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
         <div style={{ flex: 1, minHeight: '40px' }}></div>
 
         {/* Imzalar */}
-        <div style={{ marginTop: '30px', marginBottom: '50px', display: 'flex', justifyContent: 'space-between', padding: '0 20px' }}>
-          <div style={{ width: '200px', textAlign: 'center' }}>
-            <div style={{ borderBottom: '1px solid #111111', height: '40px', marginBottom: '10px' }}></div>
-            <span style={{ color: '#111111', fontSize: '12px', fontWeight: 600 }}>Müşteri İmzası</span>
+        <div style={{ marginTop: '40px', marginBottom: '60px', display: 'flex', justifyContent: 'space-between', padding: '0 40px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: '#111111', fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>MÜŞTERİ</div>
+            <div style={{ color: '#555555', fontSize: '12px', fontWeight: 500 }}>ADI SOYADI / İMZA</div>
           </div>
-          <div style={{ width: '200px', textAlign: 'center' }}>
-            <div style={{ borderBottom: '1px solid #111111', height: '40px', marginBottom: '10px' }}></div>
-            <span style={{ color: '#111111', fontSize: '12px', fontWeight: 600 }}>Yetkili İmzası</span>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: '#111111', fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>SATIŞ DANIŞMANI</div>
+            <div style={{ color: '#555555', fontSize: '12px', fontWeight: 500 }}>ADI SOYADI / İMZA</div>
           </div>
         </div>
 
         {/* Footer */}
         <div style={{ marginTop: 'auto', borderTop: '2px solid #111111', paddingTop: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ color: '#111111', fontSize: '11px', fontWeight: 500, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ color: '#111111', fontSize: '11px', fontWeight: 500, display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
             <div style={{ color: '#111111', fontWeight: 800, letterSpacing: '0.5px', display: 'flex', gap: '12px' }}>
               {settings.instagram && <span>INSTAGRAM: @{settings.instagram.replace(/https?:\/\/(www\.)?instagram\.com\//, '').replace(/\//g, '')}</span>}
               {settings.tiktok && <span>TIKTOK: @{settings.tiktok.replace(/https?:\/\/(www\.)?tiktok\.com\/@?/, '').replace(/\//g, '')}</span>}
@@ -215,10 +217,7 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
               {settings.whatsapp && <span>WhatsApp: {settings.whatsapp}</span>}
             </div>
             {settings.email && <div>E-posta: {settings.email}</div>}
-            {settings.address && <div style={{ maxWidth: '400px', lineHeight: '1.4' }}>Adres: {settings.address}</div>}
-          </div>
-          <div style={{ color: '#111111', fontSize: '12px', textAlign: 'right', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
-            {settings.companyName || 'SZ HAUTE COUTURE'}
+            {settings.address && <div style={{ maxWidth: '100%', lineHeight: '1.4' }}>Adres: {settings.address}</div>}
           </div>
         </div>
 
