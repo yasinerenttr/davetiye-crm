@@ -7,17 +7,30 @@ export default function WhatsAppConnection() {
 
   const fetchStatus = async () => {
     try {
+      console.log('--- Fetching WhatsApp Status ---');
       const res = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/status', { credentials: 'omit' });
-      console.log('Status Response:', res.status, res.statusText);
-      const data = await res.json();
-      console.log('Status Data:', data);
+      console.log('Status Response Code:', res.status, res.statusText);
       
-      setStatus(data.status);
+      const text = await res.text();
+      console.log('Raw Response Text:', text);
       
+      if (!res.ok) {
+        throw new Error(`HTTP Error: ${res.status} - ${text}`);
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error(`Failed to parse JSON. Response was: ${text}`);
+      }
+      
+      console.log('Parsed JSON Data:', data);
+
       if (data.status === 'QR_READY') {
+        setStatus('ONLINE'); // Requested by user
         try {
           const qrRes = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/qr', { credentials: 'omit' });
-          console.log('QR Response:', qrRes.status);
           if (qrRes.ok) {
             const qrData = await qrRes.json();
             setQr(qrData.qr);
@@ -28,10 +41,11 @@ export default function WhatsAppConnection() {
           console.error('QR fetch error:', qrErr);
         }
       } else {
+        setStatus(data.status);
         setQr(null);
       }
     } catch (err) {
-      console.error('Main fetchStatus error:', err);
+      console.error('Main fetchStatus Catch Block Triggered:', err.message, err);
       setStatus('OFFLINE');
     }
   };
@@ -80,7 +94,7 @@ export default function WhatsAppConnection() {
             <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>
               {status === 'READY' ? 'Bağlı ve Hazır' : 
                status === 'AUTHENTICATED' ? 'Kimlik Doğrulandı...' : 
-               status === 'QR_READY' ? 'QR Kod Okutulması Bekleniyor' : 
+               status === 'QR_READY' || status === 'ONLINE' ? 'QR Kod Okutulması Bekleniyor (ONLINE)' : 
                status === 'INITIALIZING' ? 'Sunucu Başlatılıyor...' : 
                status === 'OFFLINE' ? 'Sunucu Çevrimdışı' : status}
             </strong>
@@ -112,7 +126,7 @@ export default function WhatsAppConnection() {
         </div>
       )}
 
-      {status === 'QR_READY' && qr && (
+      {(status === 'QR_READY' || status === 'ONLINE') && qr && (
         <div style={{ marginTop: 24, textAlign: 'center', background: 'var(--bg-input)', padding: '24px', borderRadius: '12px', border: '1px dashed var(--border-medium)' }}>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 16, fontWeight: 500 }}>
             Aşağıdaki QR kodu WhatsApp uygulamanızdan <strong style={{color: '#25D366'}}>Bağlı Cihazlar</strong> menüsüne girerek okutun:
