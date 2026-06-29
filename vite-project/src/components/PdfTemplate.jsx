@@ -189,10 +189,10 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
         )}
 
         {/* Spacer for pushing footer to bottom */}
-        <div style={{ flex: 1, minHeight: '30px' }}></div>
+        <div style={{ flex: 1, minHeight: '40px' }}></div>
 
         {/* Imzalar */}
-        <div style={{ marginTop: '30px', marginBottom: '40px', display: 'flex', justifyContent: 'space-between', padding: '0 20px' }}>
+        <div style={{ marginTop: '30px', marginBottom: '50px', display: 'flex', justifyContent: 'space-between', padding: '0 20px' }}>
           <div style={{ width: '200px', textAlign: 'center' }}>
             <div style={{ borderBottom: '1px solid #111111', height: '40px', marginBottom: '10px' }}></div>
             <span style={{ color: '#111111', fontSize: '12px', fontWeight: 600 }}>Müşteri İmzası</span>
@@ -204,15 +204,20 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
         </div>
 
         {/* Footer */}
-        <div style={{ marginTop: 'auto', borderTop: '2px solid #111111', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ color: '#111111', fontSize: '11px', fontWeight: 500 }}>
-            <div style={{ marginBottom: '4px', color: '#111111', fontWeight: 800, letterSpacing: '0.5px' }}>
-              {settings.instagram ? `INSTAGRAM / ${settings.instagram.replace(/https?:\/\/(www\.)?instagram\.com\//, '').replace(/\//g, '').toUpperCase()}` : 'INSTAGRAM / SZHAUTECOUTURE'}
+        <div style={{ marginTop: 'auto', borderTop: '2px solid #111111', paddingTop: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ color: '#111111', fontSize: '11px', fontWeight: 500, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ color: '#111111', fontWeight: 800, letterSpacing: '0.5px', display: 'flex', gap: '12px' }}>
+              {settings.instagram && <span>INSTAGRAM: @{settings.instagram.replace(/https?:\/\/(www\.)?instagram\.com\//, '').replace(/\//g, '')}</span>}
+              {settings.tiktok && <span>TIKTOK: @{settings.tiktok.replace(/https?:\/\/(www\.)?tiktok\.com\/@?/, '').replace(/\//g, '')}</span>}
             </div>
-            <div>Telefon: {settings.phone || '+90 535 206 08 95'} {settings.email ? `• E-posta: ${settings.email}` : ''}</div>
-            <div style={{ marginTop: '2px' }}>{settings.address || ''}</div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              {settings.phone && <span>Tel: {settings.phone}</span>}
+              {settings.whatsapp && <span>WhatsApp: {settings.whatsapp}</span>}
+            </div>
+            {settings.email && <div>E-posta: {settings.email}</div>}
+            {settings.address && <div style={{ maxWidth: '400px', lineHeight: '1.4' }}>Adres: {settings.address}</div>}
           </div>
-          <div style={{ color: '#111111', fontSize: '11px', textAlign: 'right', fontWeight: 800 }}>
+          <div style={{ color: '#111111', fontSize: '12px', textAlign: 'right', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
             {settings.companyName || 'SZ HAUTE COUTURE'}
           </div>
         </div>
