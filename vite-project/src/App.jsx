@@ -19,7 +19,7 @@ import { normalizeNumericInput } from './utils/formatters'
 import { localizeField } from './utils/i18nFields'
 import { PdfTemplate } from './components/PdfTemplate'
 
-import WhatsAppConnection from './components/WhatsAppConnection'
+
 
 /* ── Sabitler ─────────────────────────────────────── */
 const ADMIN_PATH = '/turgut'
@@ -127,7 +127,7 @@ function App() {
   const [selectedId, setSelectedId] = useState(null)
   const [toast,      setToast]      = useState('')
   const [waLoading,  setWaLoading]  = useState('') // '' = inactive, 'PDF hazırlanıyor...', 'WhatsApp açılıyor...' vb.
-  const [waStatus,   setWaStatus]   = useState('UNKNOWN')
+
   const [lastSync,   setLastSync]   = useState(null)
   
   const [dbSocialLinks, setDbSocialLinks] = useState({ instagram_url: '', tiktok_url: '', facebook_url: '' })
@@ -290,21 +290,7 @@ function App() {
     }).catch(() => {})
   }, [settings])
 
-  useEffect(() => {
-    const checkWaStatus = async () => {
-      try {
-        const res = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/status', { credentials: 'omit' })
-        if (!res.ok) throw new Error('status-unavailable')
-        const data = await res.json()
-        setWaStatus(data?.status || 'UNKNOWN')
-      } catch {
-        setWaStatus('OFFLINE')
-      }
-    }
-    checkWaStatus()
-    const timer = setInterval(checkWaStatus, 5000)
-    return () => clearInterval(timer)
-  }, [])
+
 
   /* Toast helper */
   const showToast = (msg) => {
@@ -412,43 +398,17 @@ function App() {
           throw new Error('Geçerli müşteri telefonu bulunamadı. Numara +90 formatına uygun olmalı.')
         }
 
-        const newTab = window.open('about:blank', '_blank')
-        if (!newTab) {
-          showToast('⚠️ Lütfen tarayıcınızın açılır pencere (popup) engelleyicisini kapatın.')
-        }
+        // 1. PDF'i kullanıcının bilgisayarına indir
+        download()
 
-        setWaLoading('PDF Yükleniyor...')
+        // 2. WhatsApp mesaj metnini oluştur
+        const msgText = `Merhaba ${c.values?.full_name || 'Müşterimiz'},\n\nSözleşmeniz hazırlanmıştır.\nPDF ekte yer almaktadır.`
+        const waLink = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(msgText)}`
 
-        try {
-          const formData = new FormData()
-          formData.append('pdf', blob, fileName)
-          
-          const uploadRes = await fetch('https://davetiye-crm.onrender.com/api/upload-pdf', {
-            method: 'POST',
-            body: formData
-          })
-          
-          if (!uploadRes.ok) {
-            throw new Error('PDF yüklenemedi. Sunucu bağlantısını kontrol edin.')
-          }
-          
-          const uploadData = await uploadRes.json()
-          const pdfUrl = 'https://davetiye-crm.onrender.com/uploads/' + uploadData.filename
+        // 3. WhatsApp'ı aç (aynı sayfada yönlendir - popup blocker sorunu olmaz)
+        window.location.href = waLink
 
-          const msgText = `Merhaba ${c.values?.full_name || 'Müşterimiz'},\n\nSözleşmeniz hazırlanmıştır. Aşağıdaki bağlantıdan görüntüleyip indirebilirsiniz:\n\n📄 *Sözleşme Linki:*\n${pdfUrl}`
-          const waLink = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(msgText)}`
-          
-          if (newTab) {
-            newTab.location.href = waLink
-          } else {
-            window.location.href = waLink
-          }
-          
-          showToast('✅ WhatsApp uygulaması açıldı!')
-        } catch (err) {
-          if (newTab) newTab.close()
-          throw err
-        }
+        showToast('✅ PDF indirildi ve WhatsApp açıldı! İndirilen PDF dosyasını mesaja ekleyin.')
 
       } else {
         // Mail
@@ -784,7 +744,7 @@ function App() {
                           !selectedCustomer.channel ||
                           !pdfTemplateRef.current ||
                           !!waLoading ||
-                          (selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY')
+                          false
                         }
                         onClick={() => handleSend(selectedCustomer, selectedCustomer.channel)}
                         style={{
@@ -793,7 +753,7 @@ function App() {
                             !selectedCustomer.channel ||
                             !pdfTemplateRef.current ||
                             !!waLoading ||
-                            (selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY')
+                            false
                           ) ? 'not-allowed' : 'pointer',
                           fontWeight:700, fontSize:'.85rem', transition:'all .25s',
                           background: selectedCustomer.channel==='WhatsApp' ? (waLoading ? '#128C7E' : '#25D366') : 'var(--bg-card)',
@@ -803,7 +763,7 @@ function App() {
                             !selectedCustomer.channel ||
                             !pdfTemplateRef.current ||
                             !!waLoading ||
-                            (selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY')
+                            false
                           ) ? 0.75 : 1,
                         }}
                       >
@@ -816,11 +776,7 @@ function App() {
                           <><Send size={14}/> {selectedCustomer.channel==='WhatsApp' ? 'WhatsApp Gönder' : 'Sözleşme Gönder'}</>
                         )}
                       </button>
-                      {selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY' && (
-                        <span style={{ fontSize:'.75rem', color:'#ff6b6b', marginLeft:8 }}>
-                          WhatsApp hazır değil: {waStatus}
-                        </span>
-                      )}
+
                       <button className={selectedCustomer.status==='Tamamlandi' ? 'channel-btn active-done' : 'channel-btn'} onClick={() => patch(selectedCustomer.id,{status:'Tamamlandi'})}>
                         ✓ Tamamlandı
                       </button>
@@ -1049,7 +1005,7 @@ function App() {
               <ContractClauses mode="admin" />
             </div>
 
-            <WhatsAppConnection />
+
 
             {/* Sosyal Medya */}
             <div style={{ marginTop: 24, padding: 24, border: '1px solid var(--border-soft)', borderRadius: 12, background: 'var(--bg-elevated)' }}>
