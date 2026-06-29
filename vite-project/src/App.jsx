@@ -215,14 +215,15 @@ function App() {
         const localCustomers = readRecords()
         const localSettings = loadCompanySettings()
         const localClauses = loadClauses()
+        const localMessages = loadMessages()
 
         // Eğer backend boşsa (Render restart atmışsa), PC'deki veriyi backend'e yükle
         if (Object.keys(db).length === 0) {
-           if (localCustomers.length > 0 || localSettings.companyName !== 'SZ HAUTE COUTURE') {
+           if (localCustomers.length > 0 || localSettings.companyName !== 'SZ HAUTE COUTURE' || localMessages.length > 0) {
               await fetch('https://davetiye-crm.onrender.com/api/db', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customers: localCustomers, settings: localSettings, clauses: localClauses })
+                body: JSON.stringify({ customers: localCustomers, settings: localSettings, clauses: localClauses, messages: localMessages })
               }).catch(() => {})
            }
         } else {
@@ -238,6 +239,10 @@ function App() {
            }
            if (db.clauses && JSON.stringify(db.clauses) !== JSON.stringify(localClauses)) {
              saveClauses(db.clauses)
+           }
+           if (db.messages && JSON.stringify(db.messages) !== JSON.stringify(localMessages)) {
+             setMessages(db.messages)
+             saveMessages(db.messages)
            }
         }
       } catch (err) {
@@ -262,6 +267,18 @@ function App() {
       }).catch(() => {})
     }
   }, [customers])
+
+  /* messages her değişince localStorage'a ve Backend'e yaz */
+  useEffect(() => {
+    saveMessages(messages)
+    if (messages.length > 0) {
+      fetch('https://davetiye-crm.onrender.com/api/db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages })
+      }).catch(() => {})
+    }
+  }, [messages])
 
   /* ayarlar her değişince localStorage'a ve Backend'e yaz */
   useEffect(() => {
