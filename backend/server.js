@@ -21,7 +21,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // explicitly handle preflight
+app.options(/.*/, cors(corsOptions)); // explicitly handle preflight for all paths
 app.use(express.json());
 
 // Upload settings for Multer (Temp directory)
