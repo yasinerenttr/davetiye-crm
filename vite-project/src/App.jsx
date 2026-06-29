@@ -14,12 +14,12 @@ import SocialLinks from './components/SocialLinks'
 import ContractClauses, { loadClauses, saveClauses } from './components/ContractClauses'
 import { clearSession, loadCompanySettings, loadCustomers, loadSession, saveCompanySettings, saveCustomers, saveSession, loadMessages, saveMessages } from './utils/storage'
 import { exportContractPdfBlob, exportExcel, exportPdf, generatePdfFromHtml } from './utils/exporters'
-import { fetchSocialLinks, updateSocialLinks, getSupabaseClient, uploadPdfToSupabase } from './utils/supabase'
+import { fetchSocialLinks, updateSocialLinks, getSupabaseClient } from './utils/supabase'
 import { normalizeNumericInput } from './utils/formatters'
 import { localizeField } from './utils/i18nFields'
 import { PdfTemplate } from './components/PdfTemplate'
 
-
+import WhatsAppConnection from './components/WhatsAppConnection'
 
 /* ── Sabitler ─────────────────────────────────────── */
 const ADMIN_PATH = '/turgut'
@@ -407,42 +407,44 @@ function App() {
       }
 
       if (type === 'WhatsApp') {
+        if (waStatus === 'OFFLINE') {
+          throw new Error('WhatsApp backend kapalı. Backend sunucusunu başlatın.')
+        }
+        if (waStatus !== 'READY') {
+          throw new Error(`WhatsApp hazır değil (durum: ${waStatus}). Ayarlar sayfasından QR kodu okutun.`)
+        }
+
         const phone = normalizeTurkishPhone(c.values?.phone || '')
         if (!phone) {
           throw new Error('Geçerli müşteri telefonu bulunamadı. Numara +90 formatına uygun olmalı.')
         }
         
-        // 0. Senkron olarak yeni bir sekme açın (Popup engelleyiciyi aşmak için)
-        const newTab = window.open('about:blank', '_blank')
-        if (!newTab) {
-          showToast('⚠️ Lütfen tarayıcınızın açılır pencere (popup) engelleyicisini kapatın.')
-        }
+        const msgText = buildWAMsg(c.values?.full_name)
 
-        setWaLoading('PDF Buluta Yükleniyor...')
+        setWaLoading('WhatsApp gönderiliyor...')
         
-        try {
-          // 1. Upload PDF to Supabase and get the public URL
-          const pdfUrl = await uploadPdfToSupabase(blob, fileName)
+        const formData = new FormData()
+        formData.append('pdf', blob, fileName)
+        formData.append('phone', phone)
+        formData.append('caption', msgText)
 
-          // 2. Build the WhatsApp message text with the URL
-          const msgText = `Merhaba ${c.values?.full_name || 'Müşterimiz'},\n\nSözleşmeniz hazırlanmıştır. Aşağıdaki bağlantıdan görüntüleyip indirebilirsiniz:\n\n📄 *Sözleşme Linki:*\n${pdfUrl}`
-          
-          // 3. Create the direct wa.me link
-          const waLink = `https://wa.me/${phone.replace(/\\D/g, '')}?text=${encodeURIComponent(msgText)}`
-          
-          // 4. Update the blank tab's URL
-          if (newTab) {
-            newTab.location.href = waLink
-          } else {
-             // Fallback if popup blocker still blocked the initial open
-             window.location.href = waLink
+        const response = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/send-pdf', {
+          method: 'POST',
+          body: formData
+        })
+
+        if (!response.ok) {
+          let errMsg = 'WhatsApp gönderimi başarısız oldu.'
+          try {
+            const errData = await response.json()
+            if (errData?.error) errMsg = errData.error
+          } catch {
+            // noop
           }
-          
-          showToast('✅ WhatsApp uygulaması açıldı!')
-        } catch (err) {
-          if (newTab) newTab.close()
-          throw err
+          throw new Error(errMsg)
         }
+        showToast('✅ WhatsApp PDF eki başarıyla gönderildi.')
+
       } else {
         // Mail
         download()
@@ -776,7 +778,8 @@ function App() {
                         disabled={
                           !selectedCustomer.channel ||
                           !pdfTemplateRef.current ||
-                          !!waLoading
+                          !!waLoading ||
+                          (selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY')
                         }
                         onClick={() => handleSend(selectedCustomer, selectedCustomer.channel)}
                         style={{
@@ -784,7 +787,8 @@ function App() {
                           padding:'9px 18px', borderRadius:10, border:'none', cursor: (
                             !selectedCustomer.channel ||
                             !pdfTemplateRef.current ||
-                            !!waLoading
+                            !!waLoading ||
+                            (selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY')
                           ) ? 'not-allowed' : 'pointer',
                           fontWeight:700, fontSize:'.85rem', transition:'all .25s',
                           background: selectedCustomer.channel==='WhatsApp' ? (waLoading ? '#128C7E' : '#25D366') : 'var(--bg-card)',
@@ -793,7 +797,8 @@ function App() {
                           opacity: (
                             !selectedCustomer.channel ||
                             !pdfTemplateRef.current ||
-                            !!waLoading
+                            !!waLoading ||
+                            (selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY')
                           ) ? 0.75 : 1,
                         }}
                       >
@@ -806,7 +811,11 @@ function App() {
                           <><Send size={14}/> {selectedCustomer.channel==='WhatsApp' ? 'WhatsApp Gönder' : 'Sözleşme Gönder'}</>
                         )}
                       </button>
-
+                      {selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY' && (
+                        <span style={{ fontSize:'.75rem', color:'#ff6b6b', marginLeft:8 }}>
+                          WhatsApp hazır değil: {waStatus}
+                        </span>
+                      )}
                       <button className={selectedCustomer.status==='Tamamlandi' ? 'channel-btn active-done' : 'channel-btn'} onClick={() => patch(selectedCustomer.id,{status:'Tamamlandi'})}>
                         ✓ Tamamlandı
                       </button>
@@ -1035,7 +1044,7 @@ function App() {
               <ContractClauses mode="admin" />
             </div>
 
-
+            <WhatsAppConnection />
 
             {/* Sosyal Medya */}
             <div style={{ marginTop: 24, padding: 24, border: '1px solid var(--border-soft)', borderRadius: 12, background: 'var(--bg-elevated)' }}>
