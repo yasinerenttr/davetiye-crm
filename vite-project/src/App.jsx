@@ -11,7 +11,7 @@ import CustomerForm from './components/CustomerForm'
 import StatusBadge from './components/StatusBadge'
 import ContactSection from './components/ContactSection'
 import SocialLinks from './components/SocialLinks'
-import ContractClauses from './components/ContractClauses'
+import ContractClauses, { loadClauses, saveClauses } from './components/ContractClauses'
 import { clearSession, loadCompanySettings, loadCustomers, loadSession, saveCompanySettings, saveCustomers, saveSession, loadMessages, saveMessages } from './utils/storage'
 import { exportContractPdfBlob, exportExcel, exportPdf, generatePdfFromHtml } from './utils/exporters'
 import { fetchSocialLinks, updateSocialLinks, getSupabaseClient } from './utils/supabase'
@@ -214,6 +214,7 @@ function App() {
         
         const localCustomers = readRecords()
         const localSettings = loadCompanySettings()
+        const localClauses = loadClauses()
 
         // Eğer backend boşsa (Render restart atmışsa), PC'deki veriyi backend'e yükle
         if (Object.keys(db).length === 0) {
@@ -221,7 +222,7 @@ function App() {
               await fetch('https://davetiye-crm.onrender.com/api/db', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customers: localCustomers, settings: localSettings })
+                body: JSON.stringify({ customers: localCustomers, settings: localSettings, clauses: localClauses })
               }).catch(() => {})
            }
         } else {
@@ -234,6 +235,9 @@ function App() {
            if (db.settings && JSON.stringify(db.settings) !== JSON.stringify(localSettings)) {
              setSettings(db.settings)
              saveCompanySettings(db.settings)
+           }
+           if (db.clauses && JSON.stringify(db.clauses) !== JSON.stringify(localClauses)) {
+             saveClauses(db.clauses)
            }
         }
       } catch (err) {

@@ -30,9 +30,15 @@ export function loadClauses() {
   }
 }
 
-function saveClauses(list) {
+export function saveClauses(list) {
   localStorage.setItem(CL_KEY, JSON.stringify(list))
   window.dispatchEvent(new CustomEvent('clausesUpdated'))
+  // Backend'e senkronize et
+  fetch('https://davetiye-crm.onrender.com/api/db', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clauses: list })
+  }).catch(() => {})
 }
 
 /* ══════════════════════════════════════════════════════
