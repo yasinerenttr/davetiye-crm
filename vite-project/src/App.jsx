@@ -636,7 +636,9 @@ function App() {
                     </div>
                     <div className="lead-card-meta">
                       <StatusBadge status={item.status}/>
-                      <p className="lead-card-date">{new Date(item.createdAt).toLocaleDateString('tr-TR')}</p>
+                      <p className="lead-card-date">
+                        {new Date(item.createdAt).toLocaleDateString('tr-TR')} {new Date(item.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
                     </div>
                   </button>
                 ))}
