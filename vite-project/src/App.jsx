@@ -204,28 +204,70 @@ function App() {
     }
   }, [])
 
-  /* customers her değişince localStorage'a yaz (lazy init sayesinde güvenli) */
+  // --- MERKEZİ SUNUCU İLE VERİ SENKRONİZASYONU ---
+  useEffect(() => {
+    const syncWithBackend = async () => {
+      try {
+        const res = await fetch('https://davetiye-crm.onrender.com/api/db')
+        if (!res.ok) return
+        const db = await res.json()
+        
+        const localCustomers = readRecords()
+        const localSettings = loadCompanySettings()
+
+        // Eğer backend boşsa (Render restart atmışsa), PC'deki veriyi backend'e yükle
+        if (Object.keys(db).length === 0) {
+           if (localCustomers.length > 0 || localSettings.companyName !== 'SZ HAUTE COUTURE') {
+              await fetch('https://davetiye-crm.onrender.com/api/db', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customers: localCustomers, settings: localSettings })
+              }).catch(() => {})
+           }
+        } else {
+           // Backend'de veri varsa, React State'e ve LocalStorage'a yaz
+           if (db.customers && JSON.stringify(db.customers) !== JSON.stringify(localCustomers)) {
+             setCustomers(db.customers)
+             writeRecords(db.customers)
+             setLastSync(new Date())
+           }
+           if (db.settings && JSON.stringify(db.settings) !== JSON.stringify(localSettings)) {
+             setSettings(db.settings)
+             saveCompanySettings(db.settings)
+           }
+        }
+      } catch (err) {
+        // Yoksay
+      }
+    }
+    
+    // İlk açılışta ve her 3 saniyede bir senkronize et
+    syncWithBackend()
+    const timer = setInterval(syncWithBackend, 3000)
+    return () => clearInterval(timer)
+  }, [])
+
+  /* customers her değişince localStorage'a ve Backend'e yaz */
   useEffect(() => {
     writeRecords(customers)
+    if (customers.length > 0) {
+      fetch('https://davetiye-crm.onrender.com/api/db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customers })
+      }).catch(() => {})
+    }
   }, [customers])
 
-  /* Admin açıkken 5 sn'de bir yeni form gönderimlerini yakala */
+  /* ayarlar her değişince localStorage'a ve Backend'e yaz */
   useEffect(() => {
-    if (!isAdmin) return
-    const timer = setInterval(() => {
-      setCustomers(prev => {
-        const fresh = readRecords()
-        const prevIds = new Set(prev.map(c => c.id))
-        const newOnes = fresh.filter(c => !prevIds.has(c.id))
-        if (!newOnes.length) return prev
-        setLastSync(new Date())
-        return [...newOnes, ...prev]
-      })
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [isAdmin])
-
-  useEffect(() => { saveCompanySettings(settings) }, [settings])
+    saveCompanySettings(settings)
+    fetch('https://davetiye-crm.onrender.com/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ settings })
+    }).catch(() => {})
+  }, [settings])
 
   useEffect(() => {
     const checkWaStatus = async () => {
