@@ -466,9 +466,12 @@ function App() {
         const msgText = `${v.full_name || 'Müşteri'} - Satış Sözleşmesi`
         const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msgText)}`
 
-        // Tablet/Mobil cihazlarda Native Paylaşım (Eğer destekliyorsa direkt PDF'i WhatsApp'a atar)
+        // Yeni iPad'ler kendini Macintosh olarak tanıtır, bu yüzden maxTouchPoints kontrolü ekliyoruz
+        const isMobileOrTablet = /Mobi|Android|iPad|iPhone/i.test(navigator.userAgent) || 
+                                 (navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1);
+
         let shared = false
-        if (navigator.canShare && navigator.userAgent.match(/Mobi|Android|iPad|iPhone/i)) {
+        if (isMobileOrTablet && navigator.canShare) {
           const file = new File([blob], fileName, { type: 'application/pdf' })
           if (navigator.canShare({ files: [file] })) {
             try {
@@ -487,9 +490,17 @@ function App() {
 
         // Eğer native share kullanılmadıysa veya iptal edildiyse, klasik yöntem: İndir ve WhatsApp Web/App aç
         if (!shared) {
-          download()
-          window.open(waLink, 'sz_whatsapp')
-          showToast('✅ PDF indirildi ve WhatsApp açıldı! PDF dosyasını sohbete sürükleyin.')
+          if (isMobileOrTablet) {
+            // iOS Safari'de aynı anda hem indirme hem yeni sekme açma engellenir.
+            // Bu yüzden PDF'i ekranda açıyoruz, kullanıcı Safari'nin kendi paylaş butonuyla WhatsApp'a atabilir.
+            const url = URL.createObjectURL(blob)
+            window.location.href = url
+            showToast('✅ PDF açıldı. Tarayıcının paylaş butonuyla WhatsApp\'a gönderebilirsiniz.')
+          } else {
+            download()
+            window.open(waLink, 'sz_whatsapp')
+            showToast('✅ PDF indirildi ve WhatsApp açıldı! PDF dosyasını sohbete sürükleyin.')
+          }
         }
 
       } else {
