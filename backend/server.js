@@ -10,7 +10,12 @@ const app = express();
 const port = 3001;
 
 // CORS ve Body Parser
-app.use(cors());
+app.use(cors({
+  origin: ['https://sz-haute-couture.netlify.app', 'http://localhost:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Upload settings for Multer (Temp directory)
