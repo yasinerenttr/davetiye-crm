@@ -42,6 +42,36 @@ let qrCodeDataUrl = null;
 let clientStatus = 'INITIALIZING'; // INITIALIZING, QR_READY, AUTHENTICATED, READY, DISCONNECTED
 let client = null;
 let isInitializing = false;
+
+// Simple JSON Database for cross-device sync
+const DB_FILE = path.join(__dirname, 'db.json');
+
+app.get('/api/db', (req, res) => {
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      res.json(JSON.parse(fs.readFileSync(DB_FILE, 'utf-8')));
+    } else {
+      res.json({});
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/db', (req, res) => {
+  try {
+    const data = req.body;
+    let currentDb = {};
+    if (fs.existsSync(DB_FILE)) {
+      currentDb = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    }
+    const newDb = { ...currentDb, ...data };
+    fs.writeFileSync(DB_FILE, JSON.stringify(newDb));
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 let isIntentionalLogout = false;
 let reconnectTimer = null;
 let reconnectAttempts = 0;
