@@ -230,7 +230,7 @@ function App() {
   useEffect(() => {
     const checkWaStatus = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/whatsapp/status')
+        const res = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/status')
         if (!res.ok) throw new Error('status-unavailable')
         const data = await res.json()
         setWaStatus(data?.status || 'UNKNOWN')
@@ -365,7 +365,7 @@ function App() {
         formData.append('phone', phone)
         formData.append('caption', msgText)
 
-        const response = await fetch('http://localhost:3001/api/whatsapp/send-pdf', {
+        const response = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/send-pdf', {
           method: 'POST',
           body: formData
         })
