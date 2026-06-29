@@ -62,4 +62,5 @@ export const DEFAULT_FORM_FIELDS = [
   { id: 'fitting_1', label: '1. Prova', placeholder: '', type: 'date', required: false, options: [] },
   { id: 'fitting_2', label: '2. Prova', placeholder: '', type: 'date', required: false, options: [] },
   { id: 'fitting_3', label: '3. Prova', placeholder: '', type: 'date', required: false, options: [] },
+  { id: 'notes', label: 'Notlar', placeholder: 'Olcu, tadilat, teslim notlari...', type: 'textarea', required: false, options: [] },
 ]

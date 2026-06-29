@@ -35,7 +35,7 @@ const ADMIN_TABS = [
 const ADMIN_ONLY = new Set([
   'product_price','deposit','extra_fee',
   'service_type','delivery_date','return_date',
-  'fitting_1','fitting_2','fitting_3',
+  'fitting_1','fitting_2','fitting_3','notes'
 ])
 const DICT = {
   tr: {
