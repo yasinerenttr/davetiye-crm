@@ -398,17 +398,35 @@ function App() {
           throw new Error('Geçerli müşteri telefonu bulunamadı. Numara +90 formatına uygun olmalı.')
         }
 
-        // 1. PDF'i kullanıcının bilgisayarına indir
-        download()
-
-        // 2. WhatsApp mesaj metnini oluştur
+        const cleanPhone = phone.replace(/\D/g, '')
         const msgText = `Merhaba ${c.values?.full_name || 'Müşterimiz'},\n\nSözleşmeniz hazırlanmıştır.\nPDF ekte yer almaktadır.`
-        const waLink = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(msgText)}`
 
-        // 3. WhatsApp'ı aç (aynı sayfada yönlendir - popup blocker sorunu olmaz)
-        window.location.href = waLink
+        // Mobilde: navigator.share ile PDF dosyasını doğrudan WhatsApp'a paylaş
+        const pdfFile = new File([blob], fileName, { type: 'application/pdf' })
+        const canShareFiles = navigator.canShare && navigator.canShare({ files: [pdfFile] })
 
-        showToast('✅ PDF indirildi ve WhatsApp açıldı! İndirilen PDF dosyasını mesaja ekleyin.')
+        if (canShareFiles) {
+          try {
+            await navigator.share({
+              title: fileName,
+              text: msgText,
+              files: [pdfFile]
+            })
+            showToast('✅ PDF WhatsApp ile paylaşıldı!')
+          } catch (shareErr) {
+            if (shareErr.name !== 'AbortError') {
+              // Paylaşım iptal edilmediyse hata ver
+              throw shareErr
+            }
+            showToast('ℹ️ Paylaşım iptal edildi.')
+          }
+        } else {
+          // Masaüstü: PDF'i indir + WhatsApp Web'i aynı sekmede aç
+          download()
+          const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msgText)}`
+          window.open(waLink, 'sz_whatsapp') // aynı isimli pencere her seferinde tekrar kullanılır
+          showToast('✅ PDF indirildi ve WhatsApp açıldı! İndirilen PDF dosyasını sohbete sürükleyin.')
+        }
 
       } else {
         // Mail
