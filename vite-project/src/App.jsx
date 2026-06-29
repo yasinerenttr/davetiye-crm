@@ -208,7 +208,7 @@ function App() {
   useEffect(() => {
     const syncWithBackend = async () => {
       try {
-        const res = await fetch('https://davetiye-crm.onrender.com/api/db')
+        const res = await fetch('https://davetiye-crm.onrender.com/api/db', { credentials: 'omit' })
         if (!res.ok) return
         const db = await res.json()
         
@@ -293,7 +293,7 @@ function App() {
   useEffect(() => {
     const checkWaStatus = async () => {
       try {
-        const res = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/status')
+        const res = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/status', { credentials: 'omit' })
         if (!res.ok) throw new Error('status-unavailable')
         const data = await res.json()
         setWaStatus(data?.status || 'UNKNOWN')

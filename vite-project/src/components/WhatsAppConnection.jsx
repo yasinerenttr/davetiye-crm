@@ -7,12 +7,12 @@ export default function WhatsAppConnection() {
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/status');
+      const res = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/status', { credentials: 'omit' });
       const data = await res.json();
       setStatus(data.status);
       
       if (data.status === 'QR_READY') {
-        const qrRes = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/qr');
+        const qrRes = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/qr', { credentials: 'omit' });
         if (qrRes.ok) {
           const qrData = await qrRes.json();
           setQr(qrData.qr);
@@ -39,7 +39,7 @@ export default function WhatsAppConnection() {
     setStatus('INITIALIZING'); // Optimistic UI update
     
     try {
-      await fetch('https://davetiye-crm.onrender.com/api/whatsapp/logout', { method: 'POST' });
+      await fetch('https://davetiye-crm.onrender.com/api/whatsapp/logout', { method: 'POST', credentials: 'omit' });
       await fetchStatus();
     } catch (err) {
       console.error(err);
