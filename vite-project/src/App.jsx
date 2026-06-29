@@ -770,8 +770,7 @@ function App() {
                           padding:'9px 18px', borderRadius:10, border:'none', cursor: (
                             !selectedCustomer.channel ||
                             !pdfTemplateRef.current ||
-                            !!waLoading ||
-                            (selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY')
+                            !!waLoading
                           ) ? 'not-allowed' : 'pointer',
                           fontWeight:700, fontSize:'.85rem', transition:'all .25s',
                           background: selectedCustomer.channel==='WhatsApp' ? (waLoading ? '#128C7E' : '#25D366') : 'var(--bg-card)',
@@ -780,8 +779,7 @@ function App() {
                           opacity: (
                             !selectedCustomer.channel ||
                             !pdfTemplateRef.current ||
-                            !!waLoading ||
-                            (selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY')
+                            !!waLoading
                           ) ? 0.75 : 1,
                         }}
                       >
@@ -794,11 +792,7 @@ function App() {
                           <><Send size={14}/> {selectedCustomer.channel==='WhatsApp' ? 'WhatsApp Gönder' : 'Sözleşme Gönder'}</>
                         )}
                       </button>
-                      {selectedCustomer.channel === 'WhatsApp' && waStatus !== 'READY' && (
-                        <span style={{ fontSize:'.75rem', color:'#ff6b6b', marginLeft:8 }}>
-                          WhatsApp hazır değil: {waStatus}
-                        </span>
-                      )}
+
                       <button className={selectedCustomer.status==='Tamamlandi' ? 'channel-btn active-done' : 'channel-btn'} onClick={() => patch(selectedCustomer.id,{status:'Tamamlandi'})}>
                         ✓ Tamamlandı
                       </button>
