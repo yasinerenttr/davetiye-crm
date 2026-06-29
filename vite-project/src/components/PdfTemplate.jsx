@@ -32,7 +32,7 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
         ref={ref}
         style={{
           width: '794px', /* A4 width in pixels at 96 DPI */
-          height: '1123px', /* Sabit A4 yüksekliği - taşmaları engeller */
+          minHeight: '1123px', /* Sabit A4 yüksekliği yerine minHeight - taşmaları engeller ve içeriğe göre uzar */
           background: '#ffffff', /* Acik/Beyaz arkaplan */
           color: '#333333',
           fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
@@ -41,7 +41,7 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'visible'
         }}
       >
         {/* Cerceve (Siyah) */}
