@@ -220,9 +220,9 @@ function App() {
         const localClauses = loadClauses()
         const localMessages = loadMessages()
 
-        // Eğer backend boşsa (Render restart atmışsa), PC'deki veriyi backend'e yükle
+        // Eğer backend boşsa (Render restart atmışsa), sadece admin PC'deki veriyi backend'e yükleyebilir
         if (Object.keys(db).length === 0) {
-           if (localCustomers.length > 0 || localSettings.companyName !== 'SZ HAUTE COUTURE' || localMessages.length > 0) {
+           if (isAdmin && (localCustomers.length > 0 || localSettings.companyName !== 'SZ HAUTE COUTURE' || localMessages.length > 0)) {
               await fetch('https://davetiye-crm.onrender.com/api/db', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -286,12 +286,14 @@ function App() {
   /* ayarlar her değişince localStorage'a ve Backend'e yaz */
   useEffect(() => {
     saveCompanySettings(settings)
-    fetch('https://davetiye-crm.onrender.com/api/db', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ settings })
-    }).catch(() => {})
-  }, [settings])
+    if (isAdmin) {
+      fetch('https://davetiye-crm.onrender.com/api/db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings })
+      }).catch(() => {})
+    }
+  }, [settings, isAdmin])
 
 
 
