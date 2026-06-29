@@ -11,8 +11,7 @@ const port = 3001;
 
 // CORS ve Body Parser
 app.use(cors({
-  origin: ['https://sz-haute-couture.netlify.app', 'http://localhost:5173'],
-  credentials: true,
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
