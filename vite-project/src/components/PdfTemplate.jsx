@@ -56,7 +56,7 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
           <div style={{ textAlign: 'right' }}>
             <div style={{ color: '#111111', fontSize: '18px', fontWeight: 800, marginBottom: '6px', letterSpacing: '2px', textTransform: 'uppercase' }}>SATIŞ SÖZLEŞMESİ</div>
             <div style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>
-              Tarih: {new Date(customer.createdAt).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+              Tarih: {new Date().toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
             </div>
           </div>
         </div>
