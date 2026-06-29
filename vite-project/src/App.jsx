@@ -407,43 +407,48 @@ function App() {
       }
 
       if (type === 'WhatsApp') {
-        if (waStatus === 'OFFLINE') {
-          throw new Error('WhatsApp backend kapalı. Backend sunucusunu başlatın.')
-        }
-        if (waStatus !== 'READY') {
-          throw new Error(`WhatsApp hazır değil (durum: ${waStatus}). Ayarlar sayfasından QR kodu okutun.`)
-        }
-
         const phone = normalizeTurkishPhone(c.values?.phone || '')
         if (!phone) {
           throw new Error('Geçerli müşteri telefonu bulunamadı. Numara +90 formatına uygun olmalı.')
         }
-        
-        const msgText = buildWAMsg(c.values?.full_name)
 
-        setWaLoading('WhatsApp gönderiliyor...')
-        
-        const formData = new FormData()
-        formData.append('pdf', blob, fileName)
-        formData.append('phone', phone)
-        formData.append('caption', msgText)
-
-        const response = await fetch('https://davetiye-crm.onrender.com/api/whatsapp/send-pdf', {
-          method: 'POST',
-          body: formData
-        })
-
-        if (!response.ok) {
-          let errMsg = 'WhatsApp gönderimi başarısız oldu.'
-          try {
-            const errData = await response.json()
-            if (errData?.error) errMsg = errData.error
-          } catch {
-            // noop
-          }
-          throw new Error(errMsg)
+        const newTab = window.open('about:blank', '_blank')
+        if (!newTab) {
+          showToast('⚠️ Lütfen tarayıcınızın açılır pencere (popup) engelleyicisini kapatın.')
         }
-        showToast('✅ WhatsApp PDF eki başarıyla gönderildi.')
+
+        setWaLoading('PDF Yükleniyor...')
+
+        try {
+          const formData = new FormData()
+          formData.append('pdf', blob, fileName)
+          
+          const uploadRes = await fetch('https://davetiye-crm.onrender.com/api/upload-pdf', {
+            method: 'POST',
+            body: formData
+          })
+          
+          if (!uploadRes.ok) {
+            throw new Error('PDF yüklenemedi. Sunucu bağlantısını kontrol edin.')
+          }
+          
+          const uploadData = await uploadRes.json()
+          const pdfUrl = 'https://davetiye-crm.onrender.com/uploads/' + uploadData.filename
+
+          const msgText = `Merhaba ${c.values?.full_name || 'Müşterimiz'},\n\nSözleşmeniz hazırlanmıştır. Aşağıdaki bağlantıdan görüntüleyip indirebilirsiniz:\n\n📄 *Sözleşme Linki:*\n${pdfUrl}`
+          const waLink = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(msgText)}`
+          
+          if (newTab) {
+            newTab.location.href = waLink
+          } else {
+            window.location.href = waLink
+          }
+          
+          showToast('✅ WhatsApp uygulaması açıldı!')
+        } catch (err) {
+          if (newTab) newTab.close()
+          throw err
+        }
 
       } else {
         // Mail

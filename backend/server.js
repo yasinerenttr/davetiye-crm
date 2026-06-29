@@ -25,7 +25,6 @@ app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions)); // explicitly handle preflight for all paths
 app.use(express.json());
 
-// Upload settings for Multer (Temp directory)
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
@@ -47,6 +46,15 @@ const upload = multer({
     }
     cb(new Error('Only PDF files are allowed'));
   },
+});
+
+app.use('/uploads', express.static(uploadDir));
+
+app.post('/api/upload-pdf', upload.single('pdf'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No PDF file uploaded' });
+  }
+  res.json({ success: true, filename: req.file.filename });
 });
 
 // WhatsApp State
