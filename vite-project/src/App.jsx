@@ -399,34 +399,42 @@ function App() {
         }
 
         const cleanPhone = phone.replace(/\D/g, '')
-        const msgText = `Merhaba ${c.values?.full_name || 'Müşterimiz'},\n\nSözleşmeniz hazırlanmıştır.\nPDF ekte yer almaktadır.`
-
-        // Mobilde: navigator.share ile PDF dosyasını doğrudan WhatsApp'a paylaş
-        const pdfFile = new File([blob], fileName, { type: 'application/pdf' })
-        const canShareFiles = navigator.canShare && navigator.canShare({ files: [pdfFile] })
-
-        if (canShareFiles) {
-          try {
-            await navigator.share({
-              title: fileName,
-              text: msgText,
-              files: [pdfFile]
-            })
-            showToast('✅ PDF WhatsApp ile paylaşıldı!')
-          } catch (shareErr) {
-            if (shareErr.name !== 'AbortError') {
-              // Paylaşım iptal edilmediyse hata ver
-              throw shareErr
-            }
-            showToast('ℹ️ Paylaşım iptal edildi.')
-          }
-        } else {
-          // Masaüstü: PDF'i indir + WhatsApp Web'i aynı sekmede aç
-          download()
-          const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msgText)}`
-          window.open(waLink, 'sz_whatsapp') // aynı isimli pencere her seferinde tekrar kullanılır
-          showToast('✅ PDF indirildi ve WhatsApp açıldı! İndirilen PDF dosyasını sohbete sürükleyin.')
+        const v = c.values || {}
+        
+        // Sözleşme bilgilerini profesyonel bir mesaj olarak oluştur
+        let msgLines = []
+        msgLines.push(`📋 *${settings.companyName} - SÖZLEŞME*`)
+        msgLines.push(`━━━━━━━━━━━━━━━━━━━`)
+        msgLines.push(``)
+        if (v.full_name) msgLines.push(`👤 *Müşteri:* ${v.full_name}`)
+        if (v.phone) msgLines.push(`📞 *Telefon:* ${v.phone}`)
+        if (v.address) msgLines.push(`📍 *Adres:* ${v.address}`)
+        if (v.tc_no) msgLines.push(`🪪 *TC No:* ${v.tc_no}`)
+        msgLines.push(``)
+        if (v.service_type) msgLines.push(`🏷️ *İşlem Tipi:* ${v.service_type}`)
+        if (v.product_price) msgLines.push(`💰 *Ürün Fiyatı:* ${fmtNum(v.product_price)} TL`)
+        if (v.deposit) msgLines.push(`💳 *Hizmet Bedeli:* ${fmtNum(v.deposit)} TL`)
+        if (v.extra_fee && parseFloat(v.extra_fee) > 0) msgLines.push(`➕ *Ekstra Ücret:* ${fmtNum(v.extra_fee)} TL`)
+        msgLines.push(``)
+        if (v.delivery_date) msgLines.push(`📅 *Teslim Tarihi:* ${v.delivery_date}`)
+        if (v.return_date) msgLines.push(`🔄 *Geri Dönüş:* ${v.return_date}`)
+        if (v.fitting_1) msgLines.push(`✂️ *1. Prova:* ${v.fitting_1}`)
+        if (v.fitting_2) msgLines.push(`✂️ *2. Prova:* ${v.fitting_2}`)
+        if (v.fitting_3) msgLines.push(`✂️ *3. Prova:* ${v.fitting_3}`)
+        if (v.notes) {
+          msgLines.push(``)
+          msgLines.push(`📝 *Notlar:* ${v.notes}`)
         }
+        msgLines.push(``)
+        msgLines.push(`━━━━━━━━━━━━━━━━━━━`)
+        msgLines.push(`_${settings.companyName}_`)
+
+        const msgText = msgLines.join('\n')
+        const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msgText)}`
+
+        // Aynı isimli pencere kullan (her seferinde yeni sekme açmaz)
+        window.open(waLink, 'sz_whatsapp')
+        showToast('✅ WhatsApp açıldı! Sözleşme bilgileri mesaj olarak hazır.')
 
       } else {
         // Mail
