@@ -432,9 +432,10 @@ function App() {
         const msgText = msgLines.join('\n')
         const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msgText)}`
 
-        // Aynı isimli pencere kullan (her seferinde yeni sekme açmaz)
+        // PDF'i indir + WhatsApp'ı aç
+        download()
         window.open(waLink, 'sz_whatsapp')
-        showToast('✅ WhatsApp açıldı! Sözleşme bilgileri mesaj olarak hazır.')
+        showToast('✅ PDF indirildi ve WhatsApp açıldı! PDF dosyasını sohbete sürükleyin.')
 
       } else {
         // Mail
