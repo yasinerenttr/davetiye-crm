@@ -40,7 +40,7 @@ export const DEFAULT_COMPANY_SETTINGS = {
 }
 
 export const DEFAULT_FORM_FIELDS = [
-  { id: 'full_name', label: 'Musteri Ad Soyad', placeholder: 'Orn: Yasin Tatar', type: 'text', required: true, options: [] },
+  { id: 'full_name', label: 'Musteri Ad Soyad', placeholder: '', type: 'text', required: true, options: [] },
   { id: 'tc_no', label: 'TC No', placeholder: '11 haneli', type: 'text', required: false, options: [] },
   { id: 'phone', label: 'Musteri Telefon', placeholder: '05xx xxx xx xx', type: 'text', required: true, options: [] },
   { id: 'contact2_name', label: '2. Kisi Ad Soyad (Yakini)', placeholder: 'Ulasilamazsa aranacak kisi', type: 'text', required: false, options: [] },

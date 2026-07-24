@@ -1,9 +1,9 @@
 export const FIELD_I18N = {
   full_name: {
-    tr: { label: 'Musteri Ad Soyad', placeholder: 'Orn: Yasin Tatar' },
-    en: { label: 'Customer Full Name', placeholder: 'Ex: Yasin Tatar' },
-    ru: { label: 'Имя и фамилия клиента', placeholder: 'Пример: Yasin Tatar' },
-    ar: { label: 'اسم العميل الكامل', placeholder: 'مثال: Yasin Tatar' },
+    tr: { label: 'Musteri Ad Soyad', placeholder: '' },
+    en: { label: 'Customer Full Name', placeholder: '' },
+    ru: { label: 'Имя и фамилия клиента', placeholder: '' },
+    ar: { label: 'اسم العميل الكامل', placeholder: '' },
   },
   tc_no: {
     tr: { label: 'TC No', placeholder: '11 haneli' },

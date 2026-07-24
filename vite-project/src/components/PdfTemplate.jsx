@@ -19,7 +19,7 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
   const product = parseFloat(customer.values?.product_price) || 0
   const deposit = parseFloat(customer.values?.deposit) || 0
   const extra = parseFloat(customer.values?.extra_fee) || 0
-  const total = product + deposit + extra
+  const total = product
   
   const fmtNum = (n) => (n||0).toLocaleString('tr-TR')
   const clauses = loadClauses()
@@ -74,12 +74,12 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
               </h2>
               <div style={{ display: 'grid', gap: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#555555', fontSize: '14px' }}>Ad Soyad:</span>
-                  <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('full_name')}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#555555', fontSize: '14px' }}>Telefon:</span>
                   <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('phone')}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#555555', fontSize: '14px' }}>Ad Soyad:</span>
+                  <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('full_name')}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#555555', fontSize: '14px' }}>TC No:</span>
@@ -88,6 +88,14 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#555555', fontSize: '14px' }}>Adres:</span>
                   <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600, textAlign: 'right', maxWidth: '60%' }}>{getVal('address')}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#555555', fontSize: '14px' }}>2. Kişi Ad Soyad:</span>
+                  <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('contact2_name')}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#555555', fontSize: '14px' }}>2. Kişi Telefon:</span>
+                  <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('contact2_phone')}</span>
                 </div>
               </div>
             </div>
@@ -141,10 +149,6 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ color: '#555555', fontSize: '15px' }}>Hizmet Bedeli:</span>
                   <span style={{ color: '#111111', fontSize: '16px', fontWeight: 600 }}>{fmtNum(deposit)} TL</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: '#555555', fontSize: '15px' }}>Ekstra Ücret:</span>
-                  <span style={{ color: '#111111', fontSize: '16px', fontWeight: 600 }}>{fmtNum(extra)} TL</span>
                 </div>
                 
                 <div style={{ borderTop: '1px solid #cccccc', margin: '10px 0' }}></div>
@@ -206,10 +210,9 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
         </div>
 
         {/* KVKK Onayı */}
-        <div style={{ textAlign: 'center', marginBottom: '30px', padding: '0 40px' }}>
-          <div style={{ color: '#111111', fontSize: '10px', fontWeight: 700, marginBottom: '4px' }}>KVKK ONAYI</div>
-          <div style={{ color: '#555555', fontSize: '9px', lineHeight: '1.4' }}>
-            Alıcı, işbu sözleşmeyi onaylayarak kişisel verilerinin <strong style={{color: '#111111'}}>6698 sayılı KVKK</strong> kapsamında işlenmesini kabul eder. Elektronik onay hukuken geçerli olup, ıslak imza isteğe bağlıdır.
+        <div style={{ textAlign: 'center', marginBottom: '30px', padding: '0 40px', width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ color: '#555555', fontSize: '6px', fontWeight: 400, whiteSpace: 'nowrap' }}>
+            <span style={{fontWeight: 700, color: '#111111'}}>KVKK ONAYI:</span> Alıcı, işbu sözleşmeyi onaylayarak kişisel verilerinin 6698 sayılı KVKK kapsamında işlenmesini kabul eder. Elektronik onay hukuken geçerli olup, ıslak imza isteğe bağlıdır.
           </div>
         </div>
 

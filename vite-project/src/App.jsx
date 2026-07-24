@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react'
 import {
   CalendarDays, CheckCircle2, Download, FileText,
-  Globe, Inbox, Mail, MessageCircle, Search, Send, UserRound, UsersRound, Link, FileSpreadsheet
+  Globe, Inbox, Mail, MessageCircle, Search, Send, UserRound, UsersRound, Link, FileSpreadsheet, Trash2
 } from 'lucide-react'
 import './App.css'
 import { ADMIN_CREDENTIALS, DEFAULT_COMPANY_SETTINGS, DEFAULT_FORM_FIELDS } from './constants'
@@ -808,6 +808,17 @@ function App() {
                       </button>
                       <button className="btn" onClick={() => exportExcel([selectedCustomer], localizedFields, `${(selectedCustomer.values?.full_name||'musteri').replace(/\s+/g,'_')}.xlsx`)}>
                         <FileText size={15}/> Excel İndir
+                      </button>
+                      <button className="btn" style={{ color: '#ff4d4f', borderColor: '#ff4d4f', marginLeft: 'auto' }} onClick={() => {
+                        if (window.confirm('Bu talebi silmek istediğinize emin misiniz?')) {
+                          const updated = customers.filter(c => c.id !== selectedCustomer.id)
+                          setCustomers(updated)
+                          writeRecords(updated)
+                          setSelectedId(null)
+                          showToast('✅ Talep silindi.')
+                        }
+                      }}>
+                        <Trash2 size={15}/> Sil
                       </button>
                     </div>
 
