@@ -36,6 +36,26 @@
 .sidebar-brand{padding-bottom:20px;border-bottom:1px solid var(--border-soft);margin-bottom:16px;}
 .sidebar-brand .eyebrow{color:var(--accent);font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}
 .sidebar-brand h2{color:var(--text-primary);font-size:1.05rem;font-weight:800;margin-top:4px;}
+
+.brand-logo-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.brand-logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
 .side-nav{display:grid;gap:6px;flex:1;}
 .side-link{border:1px solid transparent;background:transparent;border-radius:10px;padding:11px 12px;text-align:left;display:inline-flex;gap:10px;align-items:center;cursor:pointer;color:var(--text-secondary);font-weight:500;font-size:.9rem;transition:all .2s ease;width:100%;}
 .side-link:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-medium);}

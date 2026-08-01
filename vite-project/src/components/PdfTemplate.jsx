@@ -106,9 +106,22 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
                 KAYIT DETAYLARI
               </h2>
               <div style={{ display: 'grid', gap: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#555555', fontSize: '14px' }}>İşlem Tipi:</span>
-                  <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('service_type')}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#555555', fontSize: '14px', flexShrink: 0 }}>İşlem Tipi:</span>
+                  <span style={{ 
+                    display: 'inline-block',
+                    background: '#111111', 
+                    color: '#ffffff', 
+                    padding: '4px 10px', 
+                    borderRadius: '4px', 
+                    fontSize: '12px', 
+                    fontWeight: 700, 
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                    textAlign: 'center'
+                  }}>
+                    {getVal('service_type')}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#555555', fontSize: '14px' }}>Teslim Tarihi:</span>

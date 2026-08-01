@@ -86,11 +86,19 @@ export const FIELD_I18N = {
 }
 
 const SERVICE_OPTION_I18N = {
-  Kiralik: { tr: 'Kiralik', en: 'Rental', ru: 'Прокат', ar: 'إيجار' },
-  Satilik: { tr: 'Satilik', en: 'For Sale', ru: 'Продажа', ar: 'بيع' },
+  Kiralik: { tr: 'Kiralık', en: 'Rental', ru: 'Прокат', ar: 'إيجار' },
+  Satilik: { tr: 'Satılık', en: 'For Sale', ru: 'Продажа', ar: 'بيع' },
   Dikim: { tr: 'Dikim', en: 'Tailoring', ru: 'Пошив', ar: 'خياطة' },
-  Hazirdan: { tr: 'Hazirdan', en: 'Ready-made', ru: 'Готовое', ar: 'جاهز' },
+  Hazirdan: { tr: 'Hazırdan', en: 'Ready-made', ru: 'Готовое', ar: 'جاهز' },
   'Ozel Dikim': { tr: 'Özel Dikim', en: 'Custom Tailoring', ru: 'Индивидуальный пошив', ar: 'خياطة مخصصة' },
+  'Hazırdan / Kiralık': { tr: 'Hazırdan / Kiralık', en: 'Ready-made / Rental', ru: 'Готовое / Прокат', ar: 'جاهز / إيجار' },
+  'Hazırdan / Satış': { tr: 'Hazırdan / Satış', en: 'Ready-made / Sale', ru: 'Готовое / Продажа', ar: 'جاهز / بيع' },
+  'Hazırdan/Kiralık': { tr: 'Hazırdan / Kiralık', en: 'Ready-made / Rental', ru: 'Готовое / Прокат', ar: 'جاهز / إيجار' },
+  'Hazırdan/Satış': { tr: 'Hazırdan / Satış', en: 'Ready-made / Sale', ru: 'Готовое / Продажа', ar: 'جاهز / بيع' },
+  'Özel Dikim / Kiralık': { tr: 'Özel Dikim / Kiralık', en: 'Custom Tailoring / Rental', ru: 'Индивидуальный пошив / Прокат', ar: 'خياطة مخصصة / إيجار' },
+  'Özel Dikim / Satış': { tr: 'Özel Dikim / Satış', en: 'Custom Tailoring / Sale', ru: 'Индивидуальный пошив / Продажа', ar: 'خياطة مخصصة / بيع' },
+  'Özel Dikim/Kiralık': { tr: 'Özel Dikim / Kiralık', en: 'Custom Tailoring / Rental', ru: 'Индивидуальный пошив / Прокат', ar: 'خياطة مخصصة / إيجار' },
+  'Özel Dikim/Satış': { tr: 'Özel Dikim / Satış', en: 'Custom Tailoring / Sale', ru: 'Индивидуальный пошив / Продажа', ar: 'خياطة مخصصة / بيع' },
 }
 
 export const localizeField = (field, language) => {

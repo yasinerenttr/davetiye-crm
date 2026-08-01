@@ -1,11 +1,17 @@
 import { LayoutDashboard, LogOut, Settings, UsersRound, MessageCircle, FileSpreadsheet } from 'lucide-react'
+import { LOGO_BASE64 } from '../logoBase64'
 
 function Sidebar({ activePage, onChangePage, onLogout, t, companyName, pendingCount }) {
   return (
     <aside className="sidebar">
-      <div className="sidebar-brand">
-        <p className="eyebrow">{t.saasAdmin}</p>
-        <h2>{companyName}</h2>
+      <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="brand-logo-icon">
+          <img src={LOGO_BASE64} alt="SZ Logo" />
+        </div>
+        <div>
+          <p className="eyebrow" style={{ margin: 0 }}>{t.saasAdmin}</p>
+          <h2 style={{ margin: 0, fontSize: '1.05rem' }}>{companyName}</h2>
+        </div>
       </div>
 
       <nav className="side-nav">

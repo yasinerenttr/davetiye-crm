@@ -37,6 +37,7 @@ export const DEFAULT_COMPANY_SETTINGS = {
   supabaseKey: '',
   supabaseBucket: 'teklifler',
   logoText: 'HC',
+  autoDailyPdf: true,
 }
 
 export const DEFAULT_FORM_FIELDS = [
@@ -55,7 +56,16 @@ export const DEFAULT_FORM_FIELDS = [
     placeholder: '',
     type: 'select',
     required: false,
-    options: ['Kiralik', 'Satilik', 'Dikim', 'Hazirdan', 'Ozel Dikim'],
+    options: [
+      'Hazırdan / Kiralık',
+      'Hazırdan / Satış',
+      'Özel Dikim / Kiralık',
+      'Özel Dikim / Satış',
+      'Kiralık',
+      'Satılık',
+      'Dikim',
+      'Özel Dikim',
+    ],
   },
   { id: 'delivery_date', label: 'Teslim Tarihi', placeholder: '', type: 'date', required: false, options: [] },
   { id: 'return_date', label: 'Geri Donus Tarihi', placeholder: '', type: 'date', required: false, options: [] },

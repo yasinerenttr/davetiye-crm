@@ -1,5 +1,6 @@
 import { LockKeyhole, UserRound } from 'lucide-react'
 import { useState } from 'react'
+import { LOGO_BASE64 } from '../logoBase64'
 
 function LoginPage({ onLogin, t }) {
   const [username, setUsername] = useState('')
@@ -18,8 +19,15 @@ function LoginPage({ onLogin, t }) {
   return (
     <div className="login-page">
       <div className="login-card">
-        <p className="eyebrow">{t.companyName}</p>
-        <h1>{t.adminLogin}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+          <div className="brand-logo-icon" style={{ width: 48, height: 48, borderRadius: 12 }}>
+            <img src={LOGO_BASE64} alt="SZ Logo" />
+          </div>
+          <div>
+            <p className="eyebrow" style={{ margin: 0 }}>{t.companyName}</p>
+            <h1 style={{ margin: 0, fontSize: '1.4rem' }}>{t.adminLogin}</h1>
+          </div>
+        </div>
         <p className="login-sub">{t.adminLoginSubtitle}</p>
         <form className="login-form" onSubmit={submit}>
           <label>

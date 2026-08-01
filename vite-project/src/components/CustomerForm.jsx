@@ -38,6 +38,33 @@ function CustomerForm({
     }
 
     if (field.type === 'select') {
+      if (field.id === 'service_type') {
+        return (
+          <select
+            value={formValues[field.id] || ''}
+            onChange={(e) => !ro && onChange(field.id, e.target.value, field.type)}
+            required={field.required}
+            disabled={ro}
+            style={ro ? { cursor: 'not-allowed', opacity: 0.6 } : {}}
+          >
+            <option value="">{ro ? '— Satıcı seçecek —' : '— İşlem Tipi Seçiniz —'}</option>
+            <optgroup label="Hazırdan Modeller">
+              <option value="Hazırdan / Kiralık">Hazırdan — Kiralık</option>
+              <option value="Hazırdan / Satış">Hazırdan — Satış</option>
+            </optgroup>
+            <optgroup label="Özel Dikim Modeller">
+              <option value="Özel Dikim / Kiralık">Özel Dikim — Kiralık</option>
+              <option value="Özel Dikim / Satış">Özel Dikim — Satış</option>
+            </optgroup>
+            <optgroup label="Genel İşlemler">
+              <option value="Kiralık">Kiralık</option>
+              <option value="Satılık">Satılık</option>
+              <option value="Dikim">Dikim</option>
+              <option value="Özel Dikim">Özel Dikim</option>
+            </optgroup>
+          </select>
+        )
+      }
       const options = Array.isArray(field.options) ? field.options : []
       return (
         <select

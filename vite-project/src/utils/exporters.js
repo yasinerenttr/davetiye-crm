@@ -257,3 +257,154 @@ export const generatePdfFromHtml = async (elementRef, fileName = 'teklif.pdf') =
     download: () => pdf.save(fileName)
   }
 }
+
+export const exportDailyReportPdf = (customers = [], fields = [], companyName = 'SZ HAUTE COUTURE', customDate = null) => {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+  const reportDate = customDate ? new Date(customDate) : new Date()
+  const dateStr = reportDate.toLocaleDateString('tr-TR')
+  const dateIso = reportDate.toISOString().split('T')[0]
+
+  const activeCustomers = customers.filter(c => !c.isDeleted)
+  const todayCustomers = activeCustomers.filter(c => {
+    const d = c.createdAt || c.updatedAt
+    if (!d) return false
+    return new Date(d).toISOString().split('T')[0] === dateIso
+  })
+
+  // Target list: if today's customers exist, focus on today; otherwise report all active records
+  const listToReport = todayCustomers.length > 0 ? todayCustomers : activeCustomers
+
+  // Calculate totals
+  const totalRev = listToReport.reduce((acc, c) => {
+    const v = c.values || {}
+    return acc + (parseFloat(v.product_price) || 0) + (parseFloat(v.deposit) || 0) + (parseFloat(v.extra_fee) || 0)
+  }, 0)
+
+  const pendingCount = listToReport.filter(c => c.status === 'Bekliyor').length
+  const approvedCount = listToReport.filter(c => c.status === 'Onaylandi').length
+  const sentCount = listToReport.filter(c => c.status === 'Gonderildi').length
+  const doneCount = listToReport.filter(c => c.status === 'Tamamlandi').length
+
+  // Header Banner
+  doc.setFillColor(15, 23, 42) // Dark blue slate
+  doc.rect(0, 0, 210, 38, 'F')
+
+  doc.setTextColor(234, 179, 8) // Yellow Gold
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(16)
+  doc.text(companyName.toUpperCase(), 14, 16)
+
+  doc.setTextColor(248, 250, 252)
+  doc.setFontSize(11)
+  doc.text('GUNLUK CRM VE FINANS OZET RAPORU', 14, 25)
+
+  doc.setTextColor(203, 213, 225)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.text(`Tarih: ${dateStr} | Rapor Tipi: ${todayCustomers.length > 0 ? 'Bugunun Kayitlari' : 'Genel Ozet'}`, 14, 32)
+  doc.text(`Olusturulma: ${new Date().toLocaleTimeString('tr-TR')}`, 196, 32, { align: 'right' })
+
+  // Gold accent bar
+  doc.setFillColor(234, 179, 8)
+  doc.rect(0, 38, 210, 2, 'F')
+
+  let y = 48
+
+  // Overview Cards
+  doc.setFillColor(241, 245, 249)
+  doc.setDrawColor(226, 232, 240)
+  doc.roundedRect(14, y, 182, 26, 2, 2, 'FD')
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(10)
+  doc.setTextColor(15, 23, 42)
+  doc.text('GENEL OZET VE CIRO', 18, y + 7)
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(71, 85, 105)
+  doc.text(`Toplam Islem: ${listToReport.length} adet`, 18, y + 15)
+  doc.text(`Bekleyen: ${pendingCount} | Onaylanan: ${approvedCount} | Gonderilen: ${sentCount} | Tamamlanan: ${doneCount}`, 18, y + 21)
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  doc.setTextColor(16, 185, 129) // Emerald green
+  doc.text(`Toplam Ciro: ${totalRev.toLocaleString('tr-TR')} TL`, 190, y + 16, { align: 'right' })
+
+  y += 34
+
+  // Table Header
+  doc.setFillColor(30, 41, 59)
+  doc.rect(14, y, 182, 8, 'F')
+  doc.setTextColor(255, 255, 255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8)
+
+  doc.text('MUSTERI AD SOYAD', 18, y + 5.5)
+  doc.text('TELEFON', 75, y + 5.5)
+  doc.text('ISLEM TIPI', 115, y + 5.5)
+  doc.text('DURUM', 145, y + 5.5)
+  doc.text('TUTAR', 192, y + 5.5, { align: 'right' })
+
+  y += 8
+
+  // Table Rows
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8)
+
+  if (listToReport.length === 0) {
+    doc.setTextColor(100, 116, 139)
+    doc.text('Bu tarihte kayitli islem bulunmamaktadir.', 18, y + 8)
+  } else {
+    listToReport.forEach((c, index) => {
+      if (y > 270) {
+        doc.addPage()
+        y = 20
+      }
+
+      const v = c.values || {}
+      const p = parseFloat(v.product_price) || 0
+      const d = parseFloat(v.deposit) || 0
+      const e = parseFloat(v.extra_fee) || 0
+      const itemTotal = p + d + e
+
+      if (index % 2 === 1) {
+        doc.setFillColor(248, 250, 252)
+        doc.rect(14, y, 182, 7, 'F')
+      }
+
+      doc.setTextColor(15, 23, 42)
+      const nameStr = String(v.full_name || '-').slice(0, 28)
+      doc.text(nameStr, 18, y + 4.8)
+
+      doc.setTextColor(71, 85, 105)
+      doc.text(String(v.phone || '-'), 75, y + 4.8)
+      doc.text(String(v.service_type || '-').slice(0, 18), 115, y + 4.8)
+      doc.text(String(c.status || 'Bekliyor'), 145, y + 4.8)
+
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(15, 23, 42)
+      doc.text(`${itemTotal.toLocaleString('tr-TR')} TL`, 192, y + 4.8, { align: 'right' })
+      doc.setFont('helvetica', 'normal')
+
+      doc.setDrawColor(241, 245, 249)
+      doc.line(14, y + 7, 196, y + 7)
+
+      y += 7
+    })
+  }
+
+  // Footer
+  const pageHeight = doc.internal.pageSize.getHeight()
+  doc.setDrawColor(226, 232, 240)
+  doc.line(14, pageHeight - 12, 196, pageHeight - 12)
+  doc.setFontSize(7)
+  doc.setTextColor(148, 163, 184)
+  doc.text(`${companyName} CRM - Otomatik Gunluk PDF Raporu`, 14, pageHeight - 7)
+  doc.text(`Sayfa 1`, 196, pageHeight - 7, { align: 'right' })
+
+  const safeDate = dateStr.replace(/\./g, '_')
+  const fileName = `${safeDate}_Gunluk_CRM_Raporu.pdf`
+  doc.save(fileName)
+}
+

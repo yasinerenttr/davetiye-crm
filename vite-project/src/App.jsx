@@ -4,7 +4,7 @@ import {
   Globe, Inbox, Mail, MessageCircle, Search, Send, UserRound, UsersRound, Link, FileSpreadsheet, Trash2
 } from 'lucide-react'
 import './App.css'
-import { ADMIN_CREDENTIALS, DEFAULT_COMPANY_SETTINGS, DEFAULT_FORM_FIELDS } from './constants'
+import { ADMIN_CREDENTIALS, DEFAULT_COMPANY_SETTINGS, DEFAULT_FORM_FIELDS, STORAGE_KEYS } from './constants'
 import LoginPage from './components/LoginPage'
 import Sidebar from './components/Sidebar'
 import CustomerForm from './components/CustomerForm'
@@ -13,11 +13,12 @@ import ContactSection from './components/ContactSection'
 import SocialLinks from './components/SocialLinks'
 import ContractClauses, { loadClauses, saveClauses } from './components/ContractClauses'
 import { clearSession, loadCompanySettings, loadCustomers, loadSession, saveCompanySettings, saveCustomers, saveSession, loadMessages, saveMessages } from './utils/storage'
-import { exportContractPdfBlob, exportExcel, exportPdf, generatePdfFromHtml } from './utils/exporters'
+import { exportContractPdfBlob, exportExcel, exportPdf, generatePdfFromHtml, exportDailyReportPdf } from './utils/exporters'
 import { fetchSocialLinks, updateSocialLinks, getSupabaseClient } from './utils/supabase'
 import { normalizeNumericInput } from './utils/formatters'
 import { localizeField } from './utils/i18nFields'
 import { PdfTemplate } from './components/PdfTemplate'
+import { LOGO_BASE64 } from './logoBase64'
 
 
 
@@ -146,7 +147,7 @@ function App() {
 
     // Farklı sekme/pencereden gelen değişiklikleri yakala
     const handleStorage = (e) => {
-      if (e.key === STORAGE_KEY) {
+      if (e.key === STORAGE_KEYS.CUSTOMERS) {
         setCustomers(readRecords())
         setLastSync(new Date())
       }
@@ -318,13 +319,11 @@ function App() {
   /* customers her değişince localStorage'a ve Backend'e yaz */
   useEffect(() => {
     writeRecords(customers)
-    if (customers.length > 0) {
-      fetch('https://davetiye-crm.onrender.com/api/db', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customers })
-      }).catch(() => {})
-    }
+    fetch('https://davetiye-crm.onrender.com/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customers })
+    }).catch(() => {})
   }, [customers])
 
   /* messages her değişince localStorage'a ve Backend'e yaz */
@@ -351,8 +350,6 @@ function App() {
     }
   }, [settings, isAdmin])
 
-
-
   /* Toast helper */
   const showToast = (msg) => {
     setToast(msg)
@@ -362,18 +359,43 @@ function App() {
   /* Hesaplananlar */
   const fields          = DEFAULT_FORM_FIELDS
   const localizedFields = useMemo(() => fields.map(f => localizeField(f, lang)), [lang])
-  const selectedCustomer = customers.find(x => x.id === selectedId) || null
-  const pendingCount    = customers.filter(c => c.status === 'Bekliyor').length
+  const visibleCustomers = useMemo(() => customers.filter(c => !c.isDeleted), [customers])
+  const selectedCustomer = visibleCustomers.find(x => x.id === selectedId) || null
+  const pendingCount    = visibleCustomers.filter(c => c.status === 'Bekliyor').length
+
+  /* Otomatik Günlük PDF Raporu (24 Saatte Bir) */
+  useEffect(() => {
+    if (settings.autoDailyPdf === false) return
+
+    const checkAndDownloadAutoPdf = () => {
+      const todayStr = new Date().toISOString().split('T')[0]
+      const lastDownloaded = localStorage.getItem('davetiye_last_auto_pdf_date')
+
+      if (lastDownloaded !== todayStr) {
+        try {
+          exportDailyReportPdf(customers, localizedFields, settings.companyName)
+          localStorage.setItem('davetiye_last_auto_pdf_date', todayStr)
+          showToast('📄 Günlük CRM Raporu otomatik olarak PDF indirildi!')
+        } catch (err) {
+          console.error('Otomatik PDF hatası:', err)
+        }
+      }
+    }
+
+    checkAndDownloadAutoPdf()
+    const pdfTimer = setInterval(checkAndDownloadAutoPdf, 30 * 60 * 1000)
+    return () => clearInterval(pdfTimer)
+  }, [customers, localizedFields, settings.companyName, settings.autoDailyPdf])
 
   const stats = useMemo(() => ({
-    totalRecords:   customers.length,
-    todayRecords:   customers.filter(c => isToday(c.createdAt)).length,
-    totalCustomers: new Set(customers.map(c => `${c.values?.full_name||''}-${c.values?.phone||''}`)).size,
-  }), [customers])
+    totalRecords:   visibleCustomers.length,
+    todayRecords:   visibleCustomers.filter(c => isToday(c.createdAt)).length,
+    totalCustomers: new Set(visibleCustomers.map(c => `${c.values?.full_name||''}-${c.values?.phone||''}`)).size,
+  }), [visibleCustomers])
 
   const filteredCustomers = useMemo(() => {
     const q = search.trim().toLowerCase()
-    let list = customers.filter(c => {
+    let list = visibleCustomers.filter(c => {
       if (activeTab === 'pending') return c.status === 'Bekliyor'
       if (activeTab === 'drafts')  return c.status === 'Onaylandi'
       if (activeTab === 'sent')    return c.status === 'Gonderildi' || c.status === 'Tamamlandi'
@@ -385,9 +407,9 @@ function App() {
       String(c.values?.full_name||'').toLowerCase().includes(q) ||
       String(c.values?.phone||'').toLowerCase().includes(q)
     )
-  }, [customers, search, activeTab])
+  }, [visibleCustomers, search, activeTab])
 
-  const tabCount = (id) => customers.filter(c => {
+  const tabCount = (id) => visibleCustomers.filter(c => {
     if (id === 'pending') return c.status === 'Bekliyor'
     if (id === 'drafts')  return c.status === 'Onaylandi'
     if (id === 'sent')    return c.status === 'Gonderildi' || c.status === 'Tamamlandi'
@@ -533,10 +555,15 @@ function App() {
         )}
         <section className="public-card">
           <div className="public-head">
-            <div>
-              <p className="eyebrow">{settings.companyName}</p>
-              <h1>{T.dynamicForm}</h1>
-              <p className="muted">{T.dynamicSubtitle}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div className="brand-logo-icon" style={{ width: 48, height: 48, borderRadius: 12 }}>
+                <img src={LOGO_BASE64} alt="SZ Logo" />
+              </div>
+              <div>
+                <p className="eyebrow">{settings.companyName}</p>
+                <h1>{T.dynamicForm}</h1>
+                <p className="muted">{T.dynamicSubtitle}</p>
+              </div>
             </div>
             <div className="lang-switch">
               <Globe size={14}/>
@@ -604,9 +631,14 @@ function App() {
       <div className="content">
         {/* Topbar */}
         <header className="topbar card">
-          <div>
-            <p className="eyebrow">{settings.companyName}</p>
-            <h1>Teklif &amp; Onay CRM</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div className="brand-logo-icon">
+              <img src={LOGO_BASE64} alt="SZ Logo" />
+            </div>
+            <div>
+              <p className="eyebrow">{settings.companyName}</p>
+              <h1>Teklif &amp; Onay CRM</h1>
+            </div>
           </div>
           <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:12 }}>
             <div style={{ textAlign:'right', fontSize:'.72rem', color:'var(--text-muted)', lineHeight:1.4 }}>
@@ -651,7 +683,7 @@ function App() {
               ].map(({ key, label, color, bg }) => (
                 <div key={key} className="status-overview-card" style={{ background:bg, border:`1px solid ${color}33` }}>
                   <span className="s-label" style={{ color }}>{label}</span>
-                  <span className="s-count" style={{ color }}>{customers.filter(c => c.status === key).length}</span>
+                  <span className="s-count" style={{ color }}>{visibleCustomers.filter(c => c.status === key).length}</span>
                 </div>
               ))}
             </div>
@@ -752,12 +784,21 @@ function App() {
                         </label>
                         <label>İşlem Tipi
                           <select value={selectedCustomer.values?.service_type||''} onChange={e => patchVal(selectedCustomer.id,'service_type',e.target.value)}>
-                            <option value="">Seçiniz</option>
-                            <option value="Kiralik">Kiralık</option>
-                            <option value="Satilik">Satılık</option>
-                            <option value="Dikim">Dikim</option>
-                            <option value="Hazirdan">Hazırdan</option>
-                            <option value="Ozel Dikim">Özel Dikim</option>
+                            <option value="">— İşlem Tipi Seçiniz —</option>
+                            <optgroup label="Hazırdan Modeller">
+                              <option value="Hazırdan / Kiralık">Hazırdan — Kiralık</option>
+                              <option value="Hazırdan / Satış">Hazırdan — Satış</option>
+                            </optgroup>
+                            <optgroup label="Özel Dikim Modeller">
+                              <option value="Özel Dikim / Kiralık">Özel Dikim — Kiralık</option>
+                              <option value="Özel Dikim / Satış">Özel Dikim — Satış</option>
+                            </optgroup>
+                            <optgroup label="Genel İşlemler">
+                              <option value="Kiralık">Kiralık</option>
+                              <option value="Satılık">Satılık</option>
+                              <option value="Dikim">Dikim</option>
+                              <option value="Özel Dikim">Özel Dikim</option>
+                            </optgroup>
                           </select>
                         </label>
                       </div>
@@ -811,9 +852,7 @@ function App() {
                       </button>
                       <button className="btn" style={{ color: '#ff4d4f', borderColor: '#ff4d4f', marginLeft: 'auto' }} onClick={() => {
                         if (window.confirm('Bu talebi silmek istediğinize emin misiniz?')) {
-                          const updated = customers.filter(c => c.id !== selectedCustomer.id)
-                          setCustomers(updated)
-                          writeRecords(updated)
+                          patch(selectedCustomer.id, { isDeleted: true })
                           setSelectedId(null)
                           showToast('✅ Talep silindi.')
                         }
@@ -935,7 +974,7 @@ function App() {
 
         {/* Finans & Raporlar (Kolay Excel) */}
         {activePage === 'reports' && (() => {
-          const completedCustomers = customers.filter(c => ['Tamamlandi', 'Onaylandi', 'Gonderildi'].includes(c.status) && !c.hiddenInFinance)
+          const completedCustomers = visibleCustomers.filter(c => ['Tamamlandi', 'Onaylandi', 'Gonderildi'].includes(c.status) && !c.hiddenInFinance)
           const getRevenue = (list) => list.reduce((acc, c) => {
             const v = c.values || {}
             const p = parseFloat(v.product_price) || 0
@@ -983,7 +1022,7 @@ function App() {
                       if(filteredList.length === 0) return;
                       if(window.confirm(`Emin misiniz? Filtrelenen tablodaki (${filteredList.length} adet) işlem finans raporundan silinecektir (Teklif & Onay listesinde kalmaya devam eder).`)) {
                         const filteredIds = new Set(filteredList.map(c => c.id))
-                        const next = customers.map(c => filteredIds.has(c.id) ? { ...c, hiddenInFinance: true } : c)
+                        const next = customers.map(c => filteredIds.has(c.id) ? { ...c, hiddenInFinance: true, updatedAt: new Date().toISOString() } : c)
                         setCustomers(next)
                         writeRecords(next)
                         showToast('✅ Tablodaki sözleşmeler finans raporundan silindi.')
@@ -993,6 +1032,13 @@ function App() {
                     style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#ff6b6b', borderColor: '#ff6b6b' }}
                   >
                     Hepsini Sil
+                  </button>
+                  <button
+                    className="btn btn-outline"
+                    onClick={() => exportDailyReportPdf(customers, localizedFields, settings.companyName)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <FileText size={16} /> Günlük Rapor (PDF)
                   </button>
                   <button
                     className="btn btn-primary"
@@ -1106,6 +1152,16 @@ function App() {
               <label>Telefon<input value={settings.phone} onChange={e => setSettings(p => ({...p,phone:e.target.value}))}/></label>
               <label>Adres<input value={settings.address} onChange={e => setSettings(p => ({...p,address:e.target.value}))}/></label>
               <label>Harita Linki<input value={settings.mapsLink || ''} onChange={e => setSettings(p => ({...p,mapsLink:e.target.value}))} placeholder="https://maps.app.goo.gl/..."/></label>
+              <label style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginTop: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={settings.autoDailyPdf !== false}
+                  onChange={e => setSettings(p => ({ ...p, autoDailyPdf: e.target.checked }))}
+                  style={{ width: 18, height: 18, accentColor: 'var(--pub-gold)' }}
+                />
+                <span style={{ fontWeight: 600, fontSize: '.9rem' }}>Otomatik Günlük PDF Raporu</span>
+                <span style={{ fontSize: '.78rem', color: 'var(--text-muted)' }}>(Her 24 saatte bir o günün özet raporunu otomatik bilgisayara indirir)</span>
+              </label>
             </div>
 
             <div style={{ marginTop: 24, marginBottom: 24, padding: 16, border: '1px solid var(--border-soft)', borderRadius: 10 }}>
