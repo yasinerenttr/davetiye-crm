@@ -74,16 +74,16 @@ export const PdfTemplate = forwardRef(({ customer, settings, fields }, ref) => {
               </h2>
               <div style={{ display: 'grid', gap: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#555555', fontSize: '14px' }}>Telefon:</span>
-                  <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('phone')}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#555555', fontSize: '14px' }}>Ad Soyad:</span>
                   <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('full_name')}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#555555', fontSize: '14px' }}>TC No:</span>
                   <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('tc_no')}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#555555', fontSize: '14px' }}>Telefon:</span>
+                  <span style={{ color: '#111111', fontSize: '14px', fontWeight: 600 }}>{getVal('phone')}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#555555', fontSize: '14px' }}>Adres:</span>

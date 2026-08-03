@@ -554,18 +554,18 @@ function App() {
           </div>
         )}
         <section className="public-card">
-          <div className="public-head">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div className="brand-logo-icon" style={{ width: 48, height: 48, borderRadius: 12 }}>
-                <img src={LOGO_BASE64} alt="SZ Logo" />
+          <div className="public-head" style={{ marginBottom: 28, alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              <div className="brand-logo-icon" style={{ width: 90, height: 90, borderRadius: 20, padding: 0, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
+                <img src={LOGO_BASE64} alt="SZ Logo" style={{ transform: 'scale(1.35)', objectFit: 'contain' }} />
               </div>
-              <div>
-                <p className="eyebrow">{settings.companyName}</p>
-                <h1>{T.dynamicForm}</h1>
-                <p className="muted">{T.dynamicSubtitle}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <p className="eyebrow" style={{ fontSize: '0.8rem', letterSpacing: '0.15em', marginBottom: 4 }}>{settings.companyName}</p>
+                <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}>{T.dynamicForm}</h1>
+                <p className="muted" style={{ fontSize: '1rem', marginTop: 6, fontWeight: 500 }}>{T.dynamicSubtitle}</p>
               </div>
             </div>
-            <div className="lang-switch">
+            <div className="lang-switch" style={{ alignSelf: 'flex-start' }}>
               <Globe size={14}/>
               <button className={lang === 'tr' ? 'lang-btn active' : 'lang-btn'} onClick={() => setLang('tr')}>TR</button>
               <button className={lang === 'en' ? 'lang-btn active' : 'lang-btn'} onClick={() => setLang('en')}>EN</button>
@@ -632,8 +632,8 @@ function App() {
         {/* Topbar */}
         <header className="topbar card">
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div className="brand-logo-icon">
-              <img src={LOGO_BASE64} alt="SZ Logo" />
+            <div className="brand-logo-icon" style={{ width: 56, height: 56, borderRadius: 12, padding: 0 }}>
+              <img src={LOGO_BASE64} alt="SZ Logo" style={{ transform: 'scale(1.25)' }} />
             </div>
             <div>
               <p className="eyebrow">{settings.companyName}</p>
