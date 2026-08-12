@@ -975,13 +975,17 @@ function App() {
         {/* Finans & Raporlar (Kolay Excel) */}
         {activePage === 'reports' && (() => {
           const completedCustomers = visibleCustomers.filter(c => ['Tamamlandi', 'Onaylandi', 'Gonderildi'].includes(c.status) && !c.hiddenInFinance)
-          const getRevenue = (list) => list.reduce((acc, c) => {
+          const getTotals = (list) => list.reduce((acc, c) => {
             const v = c.values || {}
             const p = parseFloat(v.product_price) || 0
             const d = parseFloat(v.deposit) || 0
             const e = parseFloat(v.extra_fee) || 0
-            return acc + p + d + e
-          }, 0)
+            return {
+              ciro: acc.ciro + p,
+              kapora: acc.kapora + d,
+              ekstra: acc.ekstra + e
+            }
+          }, { ciro: 0, kapora: 0, ekstra: 0 })
 
           const now = new Date()
           const startOfWeek = new Date(now)
@@ -1003,10 +1007,10 @@ function App() {
           const thisWeekCustomers = completedCustomers.filter(c => new Date(c.updatedAt || c.createdAt) >= startOfWeek)
           const thisMonthCustomers = completedCustomers.filter(c => new Date(c.updatedAt || c.createdAt) >= startOfMonth)
 
-          const totalRev = getRevenue(completedCustomers)
-          const weekRev = getRevenue(thisWeekCustomers)
-          const monthRev = getRevenue(thisMonthCustomers)
-          const customRev = getRevenue(filteredList)
+          const totalStats = getTotals(completedCustomers)
+          const weekStats = getTotals(thisWeekCustomers)
+          const monthStats = getTotals(thisMonthCustomers)
+          const customStats = getTotals(filteredList)
 
           return (
             <section className="card panel-card">
@@ -1054,15 +1058,27 @@ function App() {
               <div className="stats-grid" style={{ marginBottom: 24 }}>
                 <article className="stat-card card" style={{ background: 'var(--s-done-bg)', border: '1px solid var(--s-done)' }}>
                   <div className="stat-icon" style={{ background: 'var(--s-done)', color: '#fff' }}>₺</div>
-                  <div><p>Bu Hafta Ciro</p><strong>{weekRev.toLocaleString('tr-TR')} TL</strong></div>
+                  <div>
+                    <p>Bu Hafta Ciro</p>
+                    <strong>{weekStats.ciro.toLocaleString('tr-TR')} TL</strong>
+                    <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginTop: 4 }}>Kapora: {weekStats.kapora.toLocaleString('tr-TR')} ₺ | Ekstra: {weekStats.ekstra.toLocaleString('tr-TR')} ₺</div>
+                  </div>
                 </article>
                 <article className="stat-card card" style={{ background: 'var(--s-approved-bg)', border: '1px solid var(--s-approved)' }}>
                   <div className="stat-icon" style={{ background: 'var(--s-approved)', color: '#fff' }}>₺</div>
-                  <div><p>Bu Ay Ciro</p><strong>{monthRev.toLocaleString('tr-TR')} TL</strong></div>
+                  <div>
+                    <p>Bu Ay Ciro</p>
+                    <strong>{monthStats.ciro.toLocaleString('tr-TR')} TL</strong>
+                    <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginTop: 4 }}>Kapora: {monthStats.kapora.toLocaleString('tr-TR')} ₺ | Ekstra: {monthStats.ekstra.toLocaleString('tr-TR')} ₺</div>
+                  </div>
                 </article>
                 <article className="stat-card card" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-soft)' }}>
                   <div className="stat-icon" style={{ background: 'var(--text-muted)', color: '#fff' }}>₺</div>
-                  <div><p>Toplam Ciro</p><strong>{totalRev.toLocaleString('tr-TR')} TL</strong></div>
+                  <div>
+                    <p>Toplam Ciro</p>
+                    <strong>{totalStats.ciro.toLocaleString('tr-TR')} TL</strong>
+                    <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginTop: 4 }}>Kapora: {totalStats.kapora.toLocaleString('tr-TR')} ₺ | Ekstra: {totalStats.ekstra.toLocaleString('tr-TR')} ₺</div>
+                  </div>
                 </article>
               </div>
 
@@ -1079,7 +1095,7 @@ function App() {
                     <input type="date" value={reportEnd} onChange={e => setReportEnd(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: '1px solid var(--border-soft)', background: 'var(--bg-main)', color: 'var(--text-main)', fontSize: '0.8rem' }} />
                     {(reportStart || reportEnd) && (
                       <span style={{ marginLeft: '10px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--s-done)' }}>
-                        Filtrelenen Ciro: {customRev.toLocaleString('tr-TR')} TL
+                        Filtrelenen Ciro: {customStats.ciro.toLocaleString('tr-TR')} TL <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>(Kapora: {customStats.kapora.toLocaleString('tr-TR')} ₺ | Ekstra: {customStats.ekstra.toLocaleString('tr-TR')} ₺)</span>
                       </span>
                     )}
                   </div>
@@ -1097,7 +1113,7 @@ function App() {
                           <th style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-soft)', position: 'sticky', top: 0, background: 'var(--bg-card)' }}>Müşteri Adı</th>
                           <th style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-soft)', position: 'sticky', top: 0, background: 'var(--bg-card)' }}>İşlem Tipi</th>
                           <th style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-soft)', position: 'sticky', top: 0, background: 'var(--bg-card)' }}>Tarih / Durum</th>
-                          <th style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-soft)', textAlign: 'right', position: 'sticky', top: 0, background: 'var(--bg-card)' }}>Toplam Tutar</th>
+                          <th style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-soft)', textAlign: 'right', position: 'sticky', top: 0, background: 'var(--bg-card)' }}>Tutar Detayları</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1106,7 +1122,6 @@ function App() {
                           const p = parseFloat(v.product_price) || 0
                           const d = parseFloat(v.deposit) || 0
                           const e = parseFloat(v.extra_fee) || 0
-                          const cT = p + d + e
                           return (
                             <tr key={c.id} style={{ borderBottom: '1px solid var(--border-soft)' }}>
                               <td style={{ padding: '12px 20px' }}><strong>{v.full_name}</strong><br/><span style={{ color:'var(--text-muted)', fontSize:'.75rem' }}>{v.phone}</span></td>
@@ -1115,7 +1130,11 @@ function App() {
                                 {new Date(c.updatedAt || c.createdAt).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
                                 <br/><span style={{ fontSize: '.7rem', color: c.status === 'Tamamlandi' ? 'var(--s-done)' : 'var(--s-approved)' }}>{c.status}</span>
                               </td>
-                              <td style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 'bold' }}>{cT.toLocaleString('tr-TR')} TL</td>
+                              <td style={{ padding: '12px 20px', textAlign: 'right' }}>
+                                <div style={{ fontWeight: 'bold' }}>Ciro: {p.toLocaleString('tr-TR')} TL</div>
+                                {d > 0 && <div style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>Kapora: {d.toLocaleString('tr-TR')} ₺</div>}
+                                {e > 0 && <div style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>Ekstra: {e.toLocaleString('tr-TR')} ₺</div>}
+                              </td>
                             </tr>
                           )
                         })}
