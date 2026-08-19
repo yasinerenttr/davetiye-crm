@@ -100,7 +100,7 @@ function AdminEditor() {
       </div>
 
       <p className="cc-admin-hint">
-        🛈 Bu maddeler müşteri formunda görünür ve kullanıcı onayı gerekmektedir. <br />
+        Bu maddeler müşteri formunda görünür ve kullanıcı onayı gerekmektedir. <br />
         Sürükleyerek sırayı değiştirebilirsiniz.
       </p>
 
