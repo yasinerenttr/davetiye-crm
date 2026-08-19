@@ -277,8 +277,10 @@ function App() {
 
            // --- CLAUSES ---
            if (db.clauses) {
-             if (db.clauses.length > 0 && JSON.stringify(db.clauses) !== JSON.stringify(localClauses)) {
-               saveClauses(db.clauses)
+             const lastEdit = parseInt(localStorage.getItem('contract_clauses_v1_ts') || '0', 10)
+             const recentlyEdited = Date.now() - lastEdit < 10000 // 10 saniye bekle
+             if (!recentlyEdited && db.clauses.length > 0 && JSON.stringify(db.clauses) !== JSON.stringify(localClauses)) {
+               saveClauses(db.clauses, true)
              }
            } else if (isAdmin && localClauses.length > 0) {
              fetch('https://davetiye-crm.onrender.com/api/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clauses: localClauses }) }).catch(() => {})
@@ -365,7 +367,7 @@ function App() {
 
   /* Otomatik Günlük PDF Raporu (24 Saatte Bir) */
   useEffect(() => {
-    if (settings.autoDailyPdf === false) return
+    if (!isAdmin || !auth || settings.autoDailyPdf === false) return
 
     const checkAndDownloadAutoPdf = () => {
       const todayStr = new Date().toISOString().split('T')[0]
@@ -385,7 +387,7 @@ function App() {
     checkAndDownloadAutoPdf()
     const pdfTimer = setInterval(checkAndDownloadAutoPdf, 30 * 60 * 1000)
     return () => clearInterval(pdfTimer)
-  }, [customers, localizedFields, settings.companyName, settings.autoDailyPdf])
+  }, [customers, localizedFields, settings.companyName, settings.autoDailyPdf, isAdmin, auth])
 
   const stats = useMemo(() => ({
     totalRecords:   visibleCustomers.length,

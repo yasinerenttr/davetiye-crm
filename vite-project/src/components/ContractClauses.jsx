@@ -31,15 +31,19 @@ export function loadClauses() {
   }
 }
 
-export function saveClauses(list) {
+export function saveClauses(list, skipDb = false) {
   localStorage.setItem(CL_KEY, JSON.stringify(list))
   window.dispatchEvent(new CustomEvent('clausesUpdated'))
-  // Backend'e senkronize et
-  fetch('https://davetiye-crm.onrender.com/api/db', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ clauses: list })
-  }).catch(() => {})
+  
+  if (!skipDb) {
+    localStorage.setItem(CL_KEY + '_ts', Date.now().toString())
+    // Backend'e senkronize et
+    fetch('https://davetiye-crm.onrender.com/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clauses: list })
+    }).catch(() => {})
+  }
 }
 
 /* ══════════════════════════════════════════════════════
